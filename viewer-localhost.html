@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Viewer Localhost</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #f3f3f3;
+      }
+      .bar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 10px;
+        background: #1b1b1b;
+        border-bottom: 1px solid #2d2d2d;
+      }
+      input {
+        width: 90px;
+        padding: 6px 8px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #222;
+        color: #fff;
+      }
+      button {
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 6px;
+        background: #2f7cff;
+        color: white;
+        cursor: pointer;
+      }
+      small {
+        opacity: 0.8;
+      }
+      .panel {
+        padding: 16px;
+      }
+      a {
+        color: #7fb0ff;
+      }
+      code {
+        background: #222;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <label for="port">Puerto:</label>
+      <input id="port" type="number" min="1" max="65535" value="3000" />
+      <button id="openBtn">Abrir directo</button>
+      <small id="status">Listo para abrir http://localhost:3000</small>
+    </div>
+
+    <div class="panel">
+      <p>Enlace actual: <a id="directLink" href="http://localhost:3000" target="_blank" rel="noopener noreferrer">http://localhost:3000</a></p>
+      <p>Nota: si antes viste "localhost ha rechazado la conexión", era por bloqueo de <code>iframe</code>. Este modo abre directo y evita ese problema.</p>
+    </div>
+
+    <script>
+      const portInput = document.getElementById("port");
+      const openBtn = document.getElementById("openBtn");
+      const directLink = document.getElementById("directLink");
+      const status = document.getElementById("status");
+      const queryPort = new URLSearchParams(window.location.search).get("port");
+
+      if (queryPort) {
+        portInput.value = queryPort;
+      }
+
+      function getUrl() {
+        const port = portInput.value || "3000";
+        return `http://localhost:${port}`;
+      }
+
+      function refreshLink() {
+        const url = getUrl();
+        directLink.href = url;
+        directLink.textContent = url;
+        status.textContent = `Listo para abrir ${url}`;
+      }
+
+      function openLocalhost() {
+        const url = getUrl();
+        window.open(url, "_blank");
+      }
+
+      openBtn.addEventListener("click", openLocalhost);
+      portInput.addEventListener("input", refreshLink);
+      portInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") openLocalhost();
+      });
+      refreshLink();
+    </script>
+  </body>
+</html>
