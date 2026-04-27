@@ -16,14 +16,24 @@
       }
       .bar {
         display: flex;
+        flex-wrap: wrap;
         gap: 8px;
         align-items: center;
         padding: 10px;
         background: #1b1b1b;
         border-bottom: 1px solid #2d2d2d;
       }
-      input {
+      input[type='number'] {
         width: 90px;
+        padding: 6px 8px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #222;
+        color: #fff;
+      }
+      input[type='url'] {
+        flex: 1;
+        min-width: 220px;
         padding: 6px 8px;
         border: 1px solid #444;
         border-radius: 6px;
@@ -56,19 +66,34 @@
   </head>
   <body>
     <div class="bar">
-      <label for="port">Puerto:</label>
+      <label for="port">Puerto local:</label>
       <input id="port" type="number" min="1" max="65535" value="3000" />
+      <span style="opacity:0.7">|</span>
+      <label for="webUrl">Web (GitHub, etc.):</label>
+      <input
+        id="webUrl"
+        type="url"
+        placeholder="https://usuario.github.io/repo/…"
+        autocomplete="off"
+      />
       <button id="openBtn">Abrir directo</button>
       <small id="status">Listo para abrir http://localhost:3000</small>
     </div>
 
     <div class="panel">
       <p>Enlace actual: <a id="directLink" href="http://localhost:3000" target="_blank" rel="noopener noreferrer">http://localhost:3000</a></p>
+      <p>
+        <strong>Local:</strong> solo si en tu Mac tienes un servidor en ese puerto (por ejemplo el que levantaste con Python). Si no hay nada escuchando, el navegador dirá que rechazó la conexión.
+      </p>
+      <p>
+        <strong>Online:</strong> pega aquí arriba la URL de GitHub Pages y pulsa «Abrir directo»; no uses <code>localhost</code> para lo que está en internet.
+      </p>
       <p>Nota: si antes viste "localhost ha rechazado la conexión", era por bloqueo de <code>iframe</code>. Este modo abre directo y evita ese problema.</p>
     </div>
 
     <script>
       const portInput = document.getElementById("port");
+      const webUrlInput = document.getElementById("webUrl");
       const openBtn = document.getElementById("openBtn");
       const directLink = document.getElementById("directLink");
       const status = document.getElementById("status");
@@ -78,7 +103,21 @@
         portInput.value = queryPort;
       }
 
+      function trimWeb() {
+        const raw = webUrlInput.value.trim();
+        return raw || "";
+      }
+
       function getUrl() {
+        const web = trimWeb();
+        if (web) {
+          try {
+            const u = new URL(web);
+            return u.href;
+          } catch {
+            return web;
+          }
+        }
         const port = portInput.value || "3000";
         return `http://localhost:${port}`;
       }
@@ -87,18 +126,24 @@
         const url = getUrl();
         directLink.href = url;
         directLink.textContent = url;
-        status.textContent = `Listo para abrir ${url}`;
+        status.textContent = trimWeb()
+          ? `Abrirá la web: ${url}`
+          : `Listo para abrir ${url}`;
       }
 
-      function openLocalhost() {
+      function openTarget() {
         const url = getUrl();
         window.open(url, "_blank");
       }
 
-      openBtn.addEventListener("click", openLocalhost);
+      openBtn.addEventListener("click", openTarget);
       portInput.addEventListener("input", refreshLink);
+      webUrlInput.addEventListener("input", refreshLink);
       portInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") openLocalhost();
+        if (event.key === "Enter") openTarget();
+      });
+      webUrlInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") openTarget();
       });
       refreshLink();
     </script>
