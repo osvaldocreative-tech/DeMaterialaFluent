@@ -62,9 +62,23 @@
         padding: 2px 6px;
         border-radius: 4px;
       }
+      .notice {
+        margin: 12px 16px 0;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid #6b5420;
+        background: #2a2315;
+        color: #fde68a;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .notice strong {
+        color: #fff;
+      }
     </style>
   </head>
   <body>
+    <div id="githubNotice" class="notice" style="display: none"></div>
     <div class="bar">
       <label for="port">Puerto local:</label>
       <input id="port" type="number" min="1" max="65535" value="3000" />
@@ -83,12 +97,17 @@
     <div class="panel">
       <p>Enlace actual: <a id="directLink" href="http://localhost:3000" target="_blank" rel="noopener noreferrer">http://localhost:3000</a></p>
       <p>
-        <strong>Local:</strong> solo si en tu Mac tienes un servidor en ese puerto (por ejemplo el que levantaste con Python). Si no hay nada escuchando, el navegador dirá que rechazó la conexión.
+        <strong>Por qué ves “localhost rechazó la conexión”:</strong> no es un bug del visor. Significa que en tu ordenador <strong>no hay ningún servidor web</strong> escuchando en ese puerto. O levantas uno en la terminal, o usas la URL de GitHub (campo «Web»), que no usa localhost.
       </p>
       <p>
-        <strong>Online:</strong> pega aquí arriba la URL de GitHub Pages y pulsa «Abrir directo»; no uses <code>localhost</code> para lo que está en internet.
+        <strong>Local:</strong> en una terminal, dentro de la carpeta del proyecto:
+        <code>python3 -m http.server 3000</code>
+        — luego «Abrir directo» con el puerto 3000 funcionará.
       </p>
-      <p>Nota: si antes viste "localhost ha rechazado la conexión", era por bloqueo de <code>iframe</code>. Este modo abre directo y evita ese problema.</p>
+      <p>
+        <strong>Online:</strong> con el campo «Web» relleno (GitHub Pages) se abre la copia publicada en internet; no hace falta servidor en tu Mac.
+      </p>
+      <p>Otra nota: el aviso antiguo de <code>iframe</code> era distinto (vista incrustada). Abrir en pestaña nueva evita eso.</p>
     </div>
 
     <script>
@@ -98,9 +117,20 @@
       const directLink = document.getElementById("directLink");
       const status = document.getElementById("status");
       const queryPort = new URLSearchParams(window.location.search).get("port");
+      const githubNotice = document.getElementById("githubNotice");
 
       if (queryPort) {
         portInput.value = queryPort;
+      }
+
+      if (location.hostname.endsWith("github.io")) {
+        const path = location.pathname;
+        const baseDir = path.replace(/[^/]*$/, "");
+        const siteRoot = location.origin + (baseDir || "/");
+        webUrlInput.value = siteRoot;
+        githubNotice.style.display = "block";
+        githubNotice.innerHTML =
+          "<strong>Estás en GitHub Pages.</strong> Ya está puesta la URL de tu sitio en «Web». Pulsa <strong>Abrir directo</strong> para ver la web online (no hace falta localhost). Si quieres probar en tu Mac, borra «Web» y antes arranca un servidor en el puerto indicado.";
       }
 
       function trimWeb() {
