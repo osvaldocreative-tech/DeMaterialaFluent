@@ -1,17 +1,1742 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="0; url=viewer-localhost.html" />
-    <title>Viewer Localhost</title>
-    <script>
-      location.replace('viewer-localhost.html');
-    </script>
-  </head>
-  <body>
-    <p>
-      Redirigiendo a <a href="viewer-localhost.html">viewer-localhost.html</a>…
-    </p>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Material ↔ Fluent · Comparativa BOWL</title>
+  <!-- Tailwind CDN (v3): theme.extend equivale al patrón de theme variables / @theme en v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    /**
+     * Colores de demo alineados a tokens BOWL (solo nombres semánticos en UI).
+     * Patrón oficial: extender el tema → utilidades bg-*, text-*, border-*.
+     * En Tailwind v4: @import "tailwindcss"; @theme { --color-bowl-neutral-bg-1: … }
+     * @see https://context7.com/tailwindlabs/tailwindcss.com/llms.txt
+     */
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"DM Sans"', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'sans-serif'],
+            /* Nombres de tokens: sans redondeada, más amigable que monoespacio */
+            token: ['"Nunito"', '"DM Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            bowl: {
+              'neutral-background-1': '#f9fafb',
+              'neutral-background-2': '#f3f4f6',
+              'neutral-background-3': '#ffffff',
+              'neutral-foreground-1': '#0f172a',
+              'neutral-foreground-2': '#64748b',
+              'brand-background': '#2563eb',
+              'brand-foreground-link': '#1d4ed8',
+              'neutral-foreground-on-brand': '#ffffff',
+              'status-success': '#ecfdf5',
+              'status-warning': '#fffbeb',
+              'status-error': '#fef2f2',
+              'status-danger-bg-1': '#fde8e8',
+              'status-success-bg-1': '#dff6e8',
+              'status-warning-bg-1': '#fff4ce',
+            },
+            m3: {
+              surface: '#fef7ff',
+              'surface-variant': '#e7e0ec',
+              'surface-elevated': '#f7f2fa',
+              'surface-dim': '#ded8e1',
+              primary: '#6750a4',
+              'on-primary': '#ffffff',
+              'primary-container': '#eaddff',
+              'on-primary-container': '#21005e',
+              secondary: '#625b71',
+              'on-secondary': '#ffffff',
+              tertiary: '#7f525d',
+              error: '#b3261e',
+              'on-error': '#ffffff',
+              'error-container': '#f9dedc',
+              'on-error-container': '#410e0b',
+              outline: '#79747e',
+              'on-surface': '#1d1b20',
+              'on-surface-variant': '#49454f',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Nunito:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .nav-item.active { background: rgb(239 246 255); color: rgb(29 78 216); font-weight: 600; }
+    .view-col.hidden-col { display: none !important; }
+    [data-view="material"] .col-fluent { display: none !important; }
+    [data-view="fluent"] .col-material { display: none !important; }
+    [data-view="both"] .col-material,
+    [data-view="both"] .col-fluent { display: flex; }
+    .token-diagram svg { overflow: visible; }
+    .token-diagram .label-m { fill: #5b21b6; font-weight: 600; }
+    .token-diagram .label-f { fill: #1d4ed8; font-weight: 600; }
+    .token-diagram .stroke-leader { stroke: #64748b; stroke-width: 1.25; fill: none; }
+    /* Ejemplos didácticos refinados */
+    .lab-ex-title { letter-spacing: 0.08em; }
+    .lab-pill {
+      display: inline-block; border-radius: 9999px; padding: 0.2rem 0.55rem;
+      font-size: 0.65rem; font-weight: 600; line-height: 1.2;
+      border: 1px solid rgb(228 228 231 / 0.9); background: rgb(255 255 255 / 0.95);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+      color: rgb(39 39 42); font-variant-numeric: tabular-nums;
+    }
+    .lab-pill--m { border-color: rgb(237 233 254); background: rgb(250 245 255 / 0.95); color: rgb(91 33 182); }
+    .lab-pill--f { border-color: rgb(219 234 254); background: rgb(239 246 255 / 0.95); color: rgb(29 78 216); }
+    .lab-device {
+      border-radius: 2.25rem;
+      box-shadow:
+        0 0 0 1px rgb(0 0 0 / 0.04),
+        0 2px 4px rgb(0 0 0 / 0.04),
+        0 12px 24px rgb(28 25 23 / 0.08);
+    }
+    .lab-leader { stroke: rgb(161 161 170); stroke-width: 1; fill: none; opacity: 0.85; }
+    .lab-leader-dot { fill: rgb(113 113 122); }
+    /* Diagrama M3 bookshelf: cajas de anotación legibles */
+    .m3-callout-rect { fill: #ffffff; stroke: #d4d4d8; stroke-width: 1.25; }
+    .m3-callout-title { fill: #3f3f46; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; font-weight: 600; font-size: 11.5px; }
+    .m3-callout-sub { fill: #71717a; font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-size: 10px; }
+    .fluent-callout-rect { fill: #ffffff; stroke: rgb(191 219 254); stroke-width: 1.25; }
+    /* Tipografía de anotaciones alineada al diagrama M3 (m3-callout-title / m3-callout-sub) */
+    .lab-leader-fluent { stroke: rgb(96 165 250); stroke-width: 1.1; fill: none; opacity: 0.9; }
+    /* font-token: +2px sobre el tamaño base (Tailwind o herencia) */
+    .font-token.text-xs { font-size: calc(0.75rem + 2px); }
+    .font-token.text-\[11px\] { font-size: 13px; }
+    .font-token.text-\[10px\] { font-size: 12px; }
+    .font-token.text-\[9px\] { font-size: 11px; }
+    span.font-token { font-size: calc(100% + 2px); }
+    .font-token.text-xs,
+    .font-token.text-\[11px\],
+    .font-token.text-\[10px\],
+    .font-token.text-\[9px\] { line-height: 1.35; }
+    /* Visuales de mapeo semántico por componente */
+    .token-note {
+      border-radius: 0.5rem;
+      border: 1px solid rgb(226 232 240);
+      background: rgb(248 250 252);
+      padding: 0.45rem 0.55rem;
+      font-size: calc(0.68rem + 2px);
+      line-height: 1.25;
+      color: rgb(51 65 85);
+      font-family: "Nunito", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    }
+    .token-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 9999px;
+      border: 1px solid rgb(226 232 240);
+      background: white;
+      padding: 0.2rem 0.55rem;
+      font-size: calc(0.66rem + 2px);
+      color: rgb(71 85 105);
+      font-family: "Nunito", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    }
+    .dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      flex: none;
+    }
+    .didactic-card {
+      border-radius: 1rem;
+      border: 1px solid rgb(226 232 240);
+      background: white;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+      overflow: hidden;
+    }
+    .didactic-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-bottom: 1px solid rgb(241 245 249);
+    }
+    .logic-box {
+      border-radius: 0.75rem;
+      border: 1px solid rgb(253 230 138);
+      background: rgb(255 251 235);
+      padding: 0.85rem 1rem;
+      font-size: 0.82rem;
+      color: rgb(120 53 15);
+    }
+    .mock-shell {
+      border-radius: 0.9rem;
+      border: 1px solid rgb(203 213 225);
+      background: rgb(248 250 252);
+      padding: 0.75rem;
+    }
+    .mock-dark {
+      border-radius: 0.65rem;
+      background: #111827;
+      color: #e2e8f0;
+      border: 1px solid #1f2937;
+    }
+    .figma-token-card {
+      min-width: 300px;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid rgb(203 213 225);
+      background: white;
+      color: rgb(30 41 59);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    }
+    .figma-token-title {
+      border-bottom: 1px solid rgb(226 232 240);
+      background: rgb(248 250 252);
+      padding: 0.55rem 0.7rem;
+      font-size: calc(0.72rem + 2px);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .figma-token-row {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      align-items: center;
+      gap: 0.5rem;
+      border-top: 1px solid rgb(241 245 249);
+      padding: 0.5rem 0.7rem;
+      font-size: calc(0.72rem + 2px);
+    }
+    .figma-token-row:first-of-type {
+      border-top: 0;
+    }
+    .figma-token-row code {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 0.5rem;
+      background: rgb(248 250 252);
+      padding: 0.18rem 0.45rem;
+      font-family: "Nunito", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+      font-size: calc(0.69rem + 2px);
+      color: rgb(51 65 85);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .figma-token-row code::before {
+      content: "";
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 9999px;
+      flex: none;
+      background: var(--token-dot, #94a3b8);
+      border: 1px solid rgb(203 213 225);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900 antialiased" data-view="both">
+  <!-- Barra superior (estilo Face to Face: modo de vista) -->
+  <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md">
+    <div class="flex h-14 items-center justify-between gap-4 px-4 sm:px-6">
+      <div class="flex min-w-0 items-center gap-3">
+        <a href="#/inicio" class="flex items-center gap-2 text-slate-900 no-underline">
+          <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-blue-600 text-xs font-bold text-white shadow-sm">M</span>
+          <span class="hidden truncate text-sm font-semibold tracking-tight sm:inline">Material ↔ Fluent</span>
+        </a>
+        <span class="hidden h-4 w-px bg-slate-200 sm:block" aria-hidden="true"></span>
+        <span class="hidden text-xs text-slate-500 lg:inline">Comparativa de semántica de color · BOWL</span>
+      </div>
+      <div class="flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 p-1">
+        <button type="button" id="btn-view-both" class="view-btn rounded-full px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-white" data-view="both">Ambos</button>
+        <button type="button" id="btn-view-material" class="view-btn rounded-full px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-white" data-view="material">Material</button>
+        <button type="button" id="btn-view-fluent" class="view-btn rounded-full px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-white" data-view="fluent">Fluent</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex min-h-[calc(100vh-3.5rem)] flex-col lg:flex-row">
+    <!-- Sidebar -->
+    <aside class="hidden w-56 shrink-0 border-r border-slate-200 bg-white lg:block xl:w-64">
+      <nav class="sticky top-14 max-h-[calc(100vh-3.5rem)] overflow-y-auto p-4 text-sm">
+        <p class="mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Fundamentos</p>
+        <ul class="space-y-0.5">
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/inicio">Inicio</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/componente">Componente didáctico (Material vs Fluent)</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/mapa-visual">Mapa visual: roles (Material) vs alias (Fluent)</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/superficies">Superficies neutras</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/guia-semantica">Guía semántica</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/componentes-tokens">Componentes + impacto de tokens</a></li>
+          <li><a class="nav-item block rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50" href="#/tokens-bowl">Tokens Light · JSON</a></li>
+        </ul>
+        <p class="mb-2 mt-6 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Recursos</p>
+        <ul class="space-y-1 px-2 text-xs text-slate-500">
+          <li><a class="text-blue-600 hover:underline" href="https://m3.material.io/styles/color/roles" target="_blank" rel="noopener">Material — Color roles</a></li>
+          <li><a class="text-blue-600 hover:underline" href="https://fluent2.microsoft.design/color-tokens" target="_blank" rel="noopener">Fluent 2 — Color tokens</a></li>
+          <li><a class="text-blue-600 hover:underline" href="https://storybooks.fluentui.dev/react/?path=/docs/theme-colors--docs" target="_blank" rel="noopener">Fluent UI — Theme colors (Storybook)</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Móvil: selector de sección -->
+    <div class="w-full border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+      <label class="sr-only" for="section-mob">Sección</label>
+      <select id="section-mob" class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm">
+        <option value="#/inicio">Inicio</option>
+        <option value="#/componente">Componente didáctico (Material vs Fluent)</option>
+        <option value="#/mapa-visual">Mapa visual: roles (Material) vs alias (Fluent)</option>
+        <option value="#/superficies">Superficies neutras</option>
+        <option value="#/guia-semantica">Guía semántica</option>
+        <option value="#/componentes-tokens">Componentes + impacto de tokens</option>
+        <option value="#/tokens-bowl">Tokens Light · JSON</option>
+      </select>
+    </div>
+
+    <!-- Contenido principal -->
+    <main class="min-w-0 w-full flex-1">
+      <!-- INICIO -->
+      <article id="page-inicio" class="page-section hidden max-w-5xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Inicio</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">De Material a Fluent en BOWL (sin humo)</h1>
+
+        <section class="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">1. De dónde veníamos</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            BOWL empezó tirando de lo que ya conocíamos: Material. Una semántica tipo
+            <code class="rounded bg-slate-100 px-1">primary</code>, <code class="rounded bg-slate-100 px-1">secondary</code>,
+            <code class="rounded bg-slate-100 px-1">on-primary</code>. Funcionaba mientras todo era más simple.
+            El problema era de base: hablaba de colores, no de interfaz.
+          </p>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">2. El momento en el que dejó de encajar</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Cuando BOWL crece y se convierte en herramienta real (backoffice, operativa, densa), cambia la prioridad:
+            el branding deja de mandar y empieza a mandar la estructura.
+            Ya no necesitas saber qué es “primary”, necesitas saber qué fondo es base, qué capa está encima,
+            qué texto vive ahí y qué separa sin molestar.
+          </p>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">3. El problema de fondo</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Material está pensado para interfaces donde el color tiene peso. Pero BOWL no va de eso:
+            va de leer rápido, entender jerarquía, no cansar y no liarla.
+            En resumen: necesitábamos <strong class="text-slate-800">ordenar</strong>, no decorar.
+          </p>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">4. El clic</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            El cambio real fue dejar de pensar en colores y empezar a pensar en superficies.
+            Ahí Fluent encaja mejor: no dice “esto va sobre primary”, dice “esto vive sobre una superficie”.
+            Y en un backoffice eso es exactamente lo que necesitamos.
+          </p>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">5. Qué cambió realmente</h2>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            No fue un cambio de naming; fue un cambio de cabeza.
+            Pasamos de colores con rol a interfaz con estructura.
+            Ahora hablamos de superficies, contenido, capas y estados.
+            Y todo empieza a tener más sentido.
+          </p>
+        </section>
+
+        <section class="mt-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-[14px] font-semibold text-blue-700">6. Qué ganamos</h2>
+          <ul class="mt-2 space-y-2 text-sm text-slate-600">
+            <li>• <strong class="text-slate-800">Claridad</strong>: sabes por qué usas cada cosa.</li>
+            <li>• <strong class="text-slate-800">Orden</strong>: la UI se construye por niveles.</li>
+            <li>• <strong class="text-slate-800">Consistencia</strong>: menos dudas y menos parches.</li>
+            <li>• <strong class="text-slate-800">Mentalidad de producto</strong>: menos “branding”, más herramienta estructural.</li>
+          </ul>
+        </section>
+      </article>
+
+      <!-- COMPONENTE DIDÁCTICO -->
+      <article id="page-componente" class="page-section hidden max-w-5xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Ejercicio guiado</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Componente inventado: tarjeta “Confirma tus datos”</h1>
+        <p class="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600">
+          Dos bloques al estilo de las <strong>guías oficiales</strong>: primero la pantalla con roles <strong>Material 3</strong>; la segunda muestra <strong>cómo Fluent</strong> aplica la capa semántica (<strong>Neutral · Brand · Status</strong>) en los mismos componentes. Después, la tabla y los mocks cierran con la tarjeta “Confirma tus datos”.
+        </p>
+        <p class="mt-3 max-w-3xl text-xs text-slate-500">
+          Didáctica BOWL: los alias deben coincidir con vuestro JSON. Referencias:
+          <a class="text-blue-600 underline" href="https://m3.material.io/styles/color/roles" target="_blank" rel="noopener noreferrer">Material — Color roles</a>
+          ·
+          <a class="text-blue-600 underline" href="https://fluent2.microsoft.design/color-tokens" target="_blank" rel="noopener noreferrer">Fluent 2 — Color tokens</a>.
+        </p>
+
+        <!-- Ejemplo tipo guía oficial (M3 anotado) -->
+        <div class="mt-12 space-y-16">
+          <!-- Ejemplo 1: jerarquía M3 -->
+          <section class="rounded-2xl border border-stone-200/80 bg-gradient-to-b from-stone-50/80 to-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sm:p-8">
+            <div class="mx-auto max-w-2xl text-center">
+              <p class="lab-ex-title text-[10px] font-semibold uppercase text-stone-400">Ejemplo 1</p>
+              <h2 class="mt-1 text-base font-semibold tracking-tight text-stone-900 sm:text-lg">Jerarquía de superficies · Material 3</h2>
+              <p class="mt-2 text-sm leading-relaxed text-stone-600">
+                Como en la guía de <em>bookshelf</em>: <strong>Surface</strong> y <strong>Surface container</strong> (lowest → highest) ordenan la profundidad; chips, barra y FAB usan <strong>Secondary</strong>, <strong>Primary container</strong> y <strong>Primary</strong> según el rol de la acción.
+              </p>
+            </div>
+
+            <div class="mt-8 overflow-x-auto rounded-xl bg-stone-100/50 px-3 py-6 sm:px-6">
+              <svg viewBox="0 0 800 560" class="mx-auto h-auto w-full max-w-[800px]" role="img" aria-label="Pantalla tipo app con tokens M3 señalados">
+                <defs>
+                  <filter id="m3-soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.1"/></filter>
+                  <marker id="m3-dot" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><circle cx="3" cy="3" r="2.5" fill="#71717a"/></marker>
+                </defs>
+
+                <rect x="258" y="40" width="284" height="432" rx="36" fill="#faf8f5" stroke="#e7e2db" stroke-width="1.25" filter="url(#m3-soft)"/>
+                <text x="400" y="84" text-anchor="middle" fill="#44403c" font-size="15" font-weight="700" font-family="DM Sans, sans-serif">Mi área</text>
+                <rect x="280" y="100" width="240" height="40" rx="20" fill="#ebe6e0"/>
+                <text x="296" y="125" fill="#78716c" font-size="12" font-family="DM Sans, sans-serif">Buscar…</text>
+                <rect x="280" y="156" width="56" height="32" rx="16" fill="#dcd7cf"/>
+                <rect x="342" y="156" width="48" height="32" rx="16" fill="#8b7355"/>
+                <text x="366" y="176" text-anchor="middle" fill="#fafaf9" font-size="11" font-weight="600" font-family="DM Sans, sans-serif">All</text>
+                <rect x="396" y="156" width="80" height="32" rx="16" fill="#dcd7cf"/>
+                <rect x="280" y="204" width="240" height="56" rx="14" fill="#e3ddd4"/>
+                <text x="296" y="238" fill="#57534e" font-size="12" font-weight="600" font-family="DM Sans, sans-serif">Leídos · 232</text>
+                <rect x="280" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="338" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="396" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="396" y="294" width="32" height="18" rx="4" fill="#86b89a"/>
+                <text x="412" y="306" text-anchor="middle" fill="#fafaf9" font-size="9" font-weight="700" font-family="DM Sans, sans-serif">5h</text>
+                <circle cx="400" cy="348" r="28" fill="#d4a84b"/>
+                <path d="M400 338 L400 358 M392 348 L408 348" stroke="#fefce8" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M258 378 H542 V438 Q542 458 520 458 H280 Q258 458 258 438 Z" fill="#efe9e2"/>
+                <circle cx="400" cy="418" r="17" fill="#2c1f14"/>
+                <rect x="393" y="411" width="14" height="14" rx="2" fill="#faf8f5"/>
+
+                <path class="lab-leader" d="M 198 118 C 228 118 248 118 278 118" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="14" y="88" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="26" y="112">surfaceContainer</text>
+                <text class="m3-callout-title" x="26" y="128">High</text>
+
+                <path class="lab-leader" d="M 198 172 C 230 172 252 172 278 172" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="14" y="164" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="26" y="188">surfaceContainer</text>
+                <text class="m3-callout-title" x="26" y="204">Low</text>
+
+                <path class="lab-leader" d="M 198 244 C 228 244 252 244 278 232" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="14" y="240" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="26" y="264">surfaceContainer</text>
+                <text class="m3-callout-title" x="26" y="280">Lowest</text>
+
+                <path class="lab-leader" d="M 198 342 C 235 280 248 120 262 100" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="14" y="316" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="26" y="340">Surface</text>
+                <text class="m3-callout-sub" x="26" y="358">fondo general</text>
+
+                <path class="lab-leader" d="M 602 156 C 565 156 520 156 394 172" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="602" y="128" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="614" y="152">secondaryContainer</text>
+                <text class="m3-callout-sub" x="614" y="170">chip activo</text>
+
+                <path class="lab-leader" d="M 602 230 C 555 250 500 280 432 302" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="602" y="202" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="614" y="226">tertiaryContainer</text>
+                <text class="m3-callout-sub" x="614" y="244">badge</text>
+
+                <path class="lab-leader" d="M 602 304 C 555 320 480 338 428 348" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="602" y="276" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="614" y="300">primaryContainer</text>
+                <text class="m3-callout-sub" x="614" y="318">FAB</text>
+
+                <path class="lab-leader" d="M 602 378 C 555 395 500 412 400 418" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="602" y="350" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="614" y="374">Primary</text>
+                <text class="m3-callout-sub" x="614" y="392">acción crítica</text>
+
+                <path class="lab-leader" d="M 602 448 C 555 440 500 428 400 428" marker-end="url(#m3-dot)"/>
+                <rect class="m3-callout-rect" x="602" y="420" width="184" height="58" rx="8"/>
+                <text class="m3-callout-title" x="614" y="444">surfaceContainer</text>
+                <text class="m3-callout-title" x="614" y="460">Highest</text>
+              </svg>
+            </div>
+
+            <figure class="mt-8 overflow-hidden rounded-xl border border-stone-200/60 bg-white">
+              <figcaption class="border-b border-stone-100 px-4 py-2 text-center text-[11px] text-stone-500">Referencia · guía M3 (pantalla bookshelf)</figcaption>
+              <img src="assets/ref-m3-bookshelf-tokens.png" alt="Guía Material Design 3: tokens de superficie y contenedores sobre una interfaz de estantería" class="w-full object-cover object-top" loading="lazy" />
+            </figure>
+          </section>
+
+          <!-- Ejemplo 2: misma pantalla · Fluent / BOWL -->
+          <section class="rounded-2xl border border-blue-200/80 bg-gradient-to-b from-blue-50/50 to-white p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] sm:p-8">
+            <div class="mx-auto max-w-2xl text-center">
+              <p class="lab-ex-title text-[10px] font-semibold uppercase text-blue-600/80">Ejemplo 2</p>
+              <h2 class="mt-1 text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Misma pantalla · capas Neutral, Brand y Status (Fluent / BOWL)</h2>
+              <p class="mt-2 text-sm leading-relaxed text-slate-600">
+                Fluent no usa “surfaceContainer High/Low”: separa por <strong>intención</strong> y <strong>uso</strong>. El lienzo y las piezas neutras se leen con <strong>colorNeutralBackground1…3</strong>; el énfasis y el FAB comparten <strong>Brand</strong>; el badge verde entra por <strong>Status</strong>, no por “terciario” del tema.
+              </p>
+            </div>
+
+            <div class="mt-8 overflow-x-auto rounded-xl bg-blue-50/40 px-3 py-6 sm:px-6">
+              <svg viewBox="0 0 860 560" class="mx-auto h-auto w-full max-w-[860px]" role="img" aria-label="Misma pantalla con tokens semánticos Fluent BOWL">
+                <defs>
+                  <filter id="fluent-soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.1"/></filter>
+                  <marker id="fluent-dot" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><circle cx="3" cy="3" r="2.5" fill="#2563eb"/></marker>
+                </defs>
+
+                <rect x="258" y="40" width="284" height="432" rx="36" fill="#faf8f5" stroke="#e7e2db" stroke-width="1.25" filter="url(#fluent-soft)"/>
+                <text x="400" y="84" text-anchor="middle" fill="#44403c" font-size="15" font-weight="700" font-family="DM Sans, sans-serif">Mi área</text>
+                <rect x="280" y="100" width="240" height="40" rx="20" fill="#ebe6e0"/>
+                <text x="296" y="125" fill="#78716c" font-size="12" font-family="DM Sans, sans-serif">Buscar…</text>
+                <rect x="280" y="156" width="56" height="32" rx="16" fill="#dcd7cf"/>
+                <rect x="342" y="156" width="48" height="32" rx="16" fill="#8b7355"/>
+                <text x="366" y="176" text-anchor="middle" fill="#fafaf9" font-size="11" font-weight="600" font-family="DM Sans, sans-serif">All</text>
+                <rect x="396" y="156" width="80" height="32" rx="16" fill="#dcd7cf"/>
+                <rect x="280" y="204" width="240" height="56" rx="14" fill="#e3ddd4"/>
+                <text x="296" y="238" fill="#57534e" font-size="12" font-weight="600" font-family="DM Sans, sans-serif">Leídos · 232</text>
+                <rect x="280" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="338" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="396" y="276" width="52" height="70" rx="7" fill="#d6d3d1"/>
+                <rect x="396" y="294" width="32" height="18" rx="4" fill="#86b89a"/>
+                <text x="412" y="306" text-anchor="middle" fill="#fafaf9" font-size="9" font-weight="700" font-family="DM Sans, sans-serif">5h</text>
+                <circle cx="400" cy="348" r="28" fill="#d4a84b"/>
+                <path d="M400 338 L400 358 M392 348 L408 348" stroke="#fefce8" stroke-width="2.8" stroke-linecap="round"/>
+                <path d="M258 378 H542 V438 Q542 458 520 458 H280 Q258 458 258 438 Z" fill="#efe9e2"/>
+                <circle cx="400" cy="418" r="17" fill="#2c1f14"/>
+                <rect x="393" y="411" width="14" height="14" rx="2" fill="#faf8f5"/>
+
+                <path class="lab-leader-fluent" d="M 228 118 C 228 118 248 118 278 118" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="8" y="82" width="220" height="68" rx="8"/>
+                <text class="m3-callout-title" x="20" y="102">colorNeutralBackground2</text>
+                <text class="m3-callout-sub" x="20" y="118">Campo / franja elevada</text>
+                <text class="m3-callout-sub" x="20" y="134">sobre el lienzo</text>
+
+                <path class="lab-leader-fluent" d="M 228 172 C 230 172 252 172 278 172" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="8" y="160" width="220" height="56" rx="8"/>
+                <text class="m3-callout-title" x="20" y="182">colorNeutralBackground2</text>
+                <text class="m3-callout-sub" x="20" y="198">Chips en reposo</text>
+
+                <path class="lab-leader-fluent" d="M 228 256 C 228 256 252 252 278 232" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="8" y="228" width="220" height="56" rx="8"/>
+                <text class="m3-callout-title" x="20" y="250">colorNeutralBackground3</text>
+                <text class="m3-callout-sub" x="20" y="266">Panel / tarjeta</text>
+
+                <path class="lab-leader-fluent" d="M 228 344 C 235 280 248 120 262 100" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="8" y="316" width="220" height="56" rx="8"/>
+                <text class="m3-callout-title" x="20" y="338">colorNeutralBackground1</text>
+                <text class="m3-callout-sub" x="20" y="354">Lienzo de la pantalla</text>
+
+                <path class="lab-leader-fluent" d="M 568 164 C 565 156 520 156 394 172" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="568" y="118" width="276" height="72" rx="8"/>
+                <text class="m3-callout-title" x="582" y="138">colorBrandBackground</text>
+                <text class="m3-callout-title" x="582" y="154">colorNeutralForegroundOnBrand</text>
+                <text class="m3-callout-sub" x="582" y="174">Chip activo (marca)</text>
+
+                <path class="lab-leader-fluent" d="M 568 242 C 555 250 500 280 432 302" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="568" y="204" width="276" height="56" rx="8"/>
+                <text class="m3-callout-title" x="582" y="226">colorStatusSuccessBackground1</text>
+                <text class="m3-callout-sub" x="582" y="244">Badge (éxito / info)</text>
+
+                <path class="lab-leader-fluent" d="M 568 304 C 555 320 480 338 428 348" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="568" y="276" width="276" height="56" rx="8"/>
+                <text class="m3-callout-title" x="582" y="298">colorBrandBackground2</text>
+                <text class="m3-callout-sub" x="582" y="316">FAB + icono OnBrand</text>
+
+                <path class="lab-leader-fluent" d="M 568 386 C 555 395 500 412 400 418" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="568" y="350" width="276" height="56" rx="8"/>
+                <text class="m3-callout-title" x="582" y="372">colorNeutralBackground2</text>
+                <text class="m3-callout-sub" x="582" y="390">Botón central (neutro)</text>
+
+                <path class="lab-leader-fluent" d="M 568 456 C 555 440 500 428 400 428" marker-end="url(#fluent-dot)"/>
+                <rect class="fluent-callout-rect" x="568" y="420" width="276" height="56" rx="8"/>
+                <text class="m3-callout-title" x="582" y="442">colorNeutralBackground2</text>
+                <text class="m3-callout-sub" x="582" y="460">Barra inferior (neutra)</text>
+              </svg>
+            </div>
+
+            <p class="mx-auto mt-6 max-w-2xl text-center text-xs leading-relaxed text-slate-500">
+              <strong>Contraste con M3:</strong> no hay “primary / secondary / tertiary container” como familia de tema; el verde del badge es <strong>Status</strong>; chip activo y FAB usan <strong>Brand</strong> + <strong>OnBrand</strong>. La franja inferior y el control circular pueden compartir <strong>colorNeutralBackground2</strong> (capa neutra), sin mezclar con tokens de marca.
+            </p>
+          </section>
+        </div>
+
+        <p class="mt-10 text-xs font-medium uppercase tracking-wide text-slate-400">Tabla y mocks</p>
+        <ol class="mt-2 max-w-3xl list-decimal space-y-2 pl-5 text-sm text-slate-700">
+          <li><strong>Ejemplos 1 y 2</strong>: misma pantalla con roles M3 y con capas Neutral · Brand · Status en BOWL.</li>
+          <li><strong>Tabla</strong>: misma idea en formato lista (tarjeta “Confirma tus datos”).</li>
+          <li><strong>Mocks</strong> abajo: la tarjeta aplicada, sin anotaciones.</li>
+        </ol>
+
+        <!-- Tabla didáctica -->
+        <div class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-sm">
+          <table class="w-full min-w-[640px] text-left">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-3 py-3 font-semibold">Parte del UI</th>
+                <th class="px-3 py-3 font-semibold">Rol (idea)</th>
+                <th class="px-3 py-3 font-semibold">Material 3 (rol de color)</th>
+                <th class="px-3 py-3 font-semibold">Fluent · BOWL (token)</th>
+                <th class="px-3 py-3 font-semibold">Qué estás decidiendo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tr>
+                <td class="px-3 py-2.5 font-medium text-slate-800">Fondo de la pantalla</td>
+                <td class="px-3 py-2.5">Surface base</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">surface</td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorNeutralBackground1</td>
+                <td class="px-3 py-2.5 text-xs">Estructura neutra; el lienzo no “grita” marca.</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2.5 font-medium text-slate-800">Panel de la tarjeta</td>
+                <td class="px-3 py-2.5">Superficie elevada / contenedor</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">surfaceElevated <span class="text-slate-400">(demo)</span></td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorNeutralBackground3</td>
+                <td class="px-3 py-2.5 text-xs">Separar el bloque del resto sin usar Brand; un nivel más de jerarquía neutra.</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2.5 font-medium text-slate-800">Título</td>
+                <td class="px-3 py-2.5">Contenido principal</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">onSurface</td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorNeutralForeground1</td>
+                <td class="px-3 py-2.5 text-xs">Texto con máxima jerarquía sobre superficie neutra.</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2.5 font-medium text-slate-800">Párrafo de ayuda</td>
+                <td class="px-3 py-2.5">Contenido secundario</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">onSurfaceVariant</td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorNeutralForeground2</td>
+                <td class="px-3 py-2.5 text-xs">Menos peso que el título; mismo contexto neutro.</td>
+              </tr>
+              <tr class="bg-blue-50/40">
+                <td class="px-3 py-2.5 font-medium text-slate-800">Botón “Continuar”</td>
+                <td class="px-3 py-2.5">Énfasis / acción primaria</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">primary · onPrimary</td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorBrandBackground · colorNeutralForegroundOnBrand</td>
+                <td class="px-3 py-2.5 text-xs">Material ata el “on” al color primario; Fluent usa superficie de <strong>marca</strong> + foreground de contexto <strong>OnBrand</strong>.</td>
+              </tr>
+              <tr>
+                <td class="px-3 py-2.5 font-medium text-slate-800">Enlace “Ahora no”</td>
+                <td class="px-3 py-2.5">Acción ligera / navegación</td>
+                <td class="px-3 py-2.5 font-token text-xs text-violet-900">primary <span class="text-slate-400">(texto)</span></td>
+                <td class="px-3 py-2.5 font-token text-xs text-blue-900">colorBrandForegroundLink</td>
+                <td class="px-3 py-2.5 text-xs">No es un botón relleno: en Fluent el enlace de marca tiene su propio alias (no mezclar con <code class="rounded bg-slate-100 px-1">colorNeutralForeground1</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 class="mt-10 text-lg font-semibold text-slate-900">Mocks sin flechas · tarjeta “Confirma tus datos”</h2>
+        <p class="mt-2 text-sm text-slate-600">Misma pieza que resume la tabla; aquí solo colores aplicados. El <strong>mapa token ↔ zona</strong> está en los ejemplos 1–2 y en la tabla.</p>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+          <section class="col-material flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <span class="rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-violet-800">Material 3</span>
+            <p class="mt-2 text-xs text-slate-500">Roles de tema: superficie + contenedor + primary para CTA.</p>
+            <div class="mt-4 rounded-xl bg-m3-surface p-5">
+              <div class="rounded-2xl bg-m3-surface-elevated p-5 shadow-md ring-1 ring-slate-900/5">
+                <p class="text-base font-semibold text-m3-on-surface">Confirma tus datos</p>
+                <p class="mt-2 text-sm leading-relaxed text-m3-on-surface-variant">Antes de seguir, revisá que el correo sea correcto. Podés cambiarlo más tarde.</p>
+                <div class="mt-5 flex flex-wrap items-center gap-3">
+                  <button type="button" class="rounded-full bg-m3-primary px-5 py-2.5 text-sm font-semibold text-m3-on-primary shadow-sm">Continuar</button>
+                  <button type="button" class="text-sm font-medium text-m3-primary underline decoration-m3-primary/30 underline-offset-2">Ahora no</button>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-[10px] text-slate-500">Demo: <code class="rounded bg-slate-100 px-1">bg-m3-surface</code>, tarjeta <code class="rounded bg-slate-100 px-1">bg-m3-surface-elevated</code>, botón <code class="rounded bg-slate-100 px-1">bg-m3-primary</code>, enlace <code class="rounded bg-slate-100 px-1">text-m3-primary</code>.</p>
+          </section>
+
+          <section class="col-fluent flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-blue-100">
+            <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-blue-800">Fluent · BOWL</span>
+            <p class="mt-2 text-xs text-slate-500">Capas neutras + Brand solo donde hay énfasis o vínculo de marca.</p>
+            <div class="mt-4 rounded-xl bg-bowl-neutral-background-1 p-5">
+              <div class="rounded-2xl bg-bowl-neutral-background-3 p-5 shadow-md ring-1 ring-slate-200/80">
+                <p class="text-base font-semibold text-bowl-neutral-foreground-1">Confirma tus datos</p>
+                <p class="mt-2 text-sm leading-relaxed text-bowl-neutral-foreground-2">Antes de seguir, revisá que el correo sea correcto. Podés cambiarlo más tarde.</p>
+                <div class="mt-5 flex flex-wrap items-center gap-3">
+                  <button type="button" class="rounded-lg bg-bowl-brand-background px-5 py-2.5 text-sm font-semibold text-bowl-neutral-foreground-on-brand shadow-sm">Continuar</button>
+                  <button type="button" class="text-sm font-medium text-bowl-brand-foreground-link underline decoration-blue-600/30 underline-offset-2">Ahora no</button>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-[10px] text-slate-500">Demo: <code class="rounded bg-slate-100 px-1">bg-bowl-neutral-background-1</code>, tarjeta <code class="rounded bg-slate-100 px-1">bg-bowl-neutral-background-3</code>, botón <code class="rounded bg-slate-100 px-1">bg-bowl-brand-background</code> + <code class="rounded bg-slate-100 px-1">text-bowl-neutral-foreground-on-brand</code>, enlace <code class="rounded bg-slate-100 px-1">text-bowl-brand-foreground-link</code> → <span class="font-token">colorBrandForegroundLink</span>.</p>
+          </section>
+        </div>
+
+        <div class="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5">
+          <h3 class="text-sm font-semibold text-slate-900">Cómo explicarlo en una frase (para el equipo)</h3>
+          <ul class="mt-3 space-y-2 text-sm text-slate-600">
+            <li><strong class="text-slate-800">Material:</strong> “Cada pieza tiene un <em>rol de tema</em> (surface, primary…); el ‘on-*’ va siempre emparejado al color que toca.”</li>
+            <li><strong class="text-slate-800">Fluent / BOWL:</strong> “Primero <strong>Neutral</strong> para estructura y lectura; <strong>Brand</strong> solo en botón y vínculos de marca; el texto del botón sobre marca usa <strong>OnBrand</strong>, no el mismo foreground que el título.”</li>
+          </ul>
+        </div>
+
+        <div class="mt-8 rounded-xl border border-amber-200 bg-amber-50/90 p-4 text-sm text-amber-950">
+          <strong>Tip didáctico:</strong> si en el mock Fluent el título usara <code class="rounded bg-white/80 px-1">colorBrandBackground</code> solo para “destacar”, estarías mezclando <strong>estructura</strong> con <strong>marca</strong>. La tarjeta se queda en Neutral; la marca solo entra en el CTA y el enlace de acción.
+        </div>
+      </article>
+
+      <!-- COMPONENTES + IMPACTO TOKENS -->
+      <article id="page-componentes-tokens" class="page-section hidden max-w-6xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Aplicación práctica</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tokens aplicados a componentes</h1>
+        <p class="mt-3 max-w-4xl text-sm leading-relaxed text-slate-600">
+          Esta sección usa solo familias válidas de BOWL: <strong class="text-slate-800">Neutral</strong>, <strong class="text-slate-800">Brand</strong> y <strong class="text-slate-800">Status</strong>.
+          Cada ejemplo muestra <strong>zona visual</strong> + <strong>token aplicado</strong> para evitar mapeos ambiguos o legacy.
+        </p>
+
+        <div class="mt-8 grid gap-6">
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-slate-900">Button (CTA principal)</h2>
+              <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-blue-800">Brand + On Brand</span>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div class="rounded-xl p-4" style="background:#EFF4F8;">
+                <button type="button" class="rounded-lg px-5 py-2.5 text-sm font-semibold shadow-sm" style="background:#097DBB;color:#FFFFFF;">
+                  Continuar
+                </button>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span class="token-chip"><span class="dot" style="background:#097DBB;"></span>Brand.Background.1.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#FFFFFF;border:1px solid #cbd5e1;"></span>Neutral.Foreground.On Brand.Rest</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Brand / Background / 1</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#097DBB;">Primary/Base</code></div>
+                  <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#07689C;">Primary/Darker30</code></div>
+                  <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9CCDE8;">Primary/Lighter70</code></div>
+                </div>
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Foreground / On Brand</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                  <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#D4DFEA;">Neutral/Lighter70</code></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-slate-900">Link (acción ligera)</h2>
+              <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-slate-700">Neutral Foreground</span>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div class="rounded-xl border border-slate-200 p-4" style="background:#F6FAFC;">
+                <p class="text-sm" style="color:#1E2B38;">Revisa también la política de privacidad.</p>
+                <a href="javascript:void(0)" class="mt-2 inline-block text-sm font-semibold underline underline-offset-2" style="color:#208BBD;">Ver detalles</a>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span class="token-chip"><span class="dot" style="background:#208BBD;"></span>Neutral.Foreground.Link.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#1E2B38;"></span>Neutral.Foreground.1.Rest</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Foreground / 1</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#1E2B38;">Neutral/Darker70</code></div>
+                  <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9AA8B8;">Neutral/Lighter70</code></div>
+                </div>
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Foreground / Link</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#208BBD;">Info/Darker10</code></div>
+                  <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#176B92;">Info/Darker30</code></div>
+                  <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9AA8B8;">Neutral/Lighter50</code></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-slate-900">Card / Surface</h2>
+              <span class="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-emerald-800">Neutral Layers</span>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div class="rounded-xl p-4" style="background:#EFF4F8;">
+                <div class="rounded-xl border p-4 shadow-sm" style="background:#FFFFFF;border-color:#C4D3E2;">
+                  <p class="text-sm font-semibold" style="color:#1E2B38;">Resumen de actividad</p>
+                  <p class="mt-1 text-xs" style="color:#32475D;">Última actualización hace 5 minutos</p>
+                </div>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span class="token-chip"><span class="dot" style="background:#EFF4F8;"></span>Neutral.Background.1.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#FFFFFF;border:1px solid #cbd5e1;"></span>Neutral.Background.3.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#1E2B38;"></span>Neutral.Foreground.1.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#C4D3E2;"></span>Neutral.Stroke.1.Rest</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Background</div>
+                  <div class="figma-token-row"><span>Canvas</span><code style="--token-dot:#EFF4F8;">Background.1.Rest</code></div>
+                  <div class="figma-token-row"><span>Elevated</span><code style="--token-dot:#FFFFFF;">Background.3.Rest</code></div>
+                  <div class="figma-token-row"><span>Select</span><code style="--token-dot:#D8EEF8;">Background.1.Select</code></div>
+                </div>
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Stroke / 1</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#C4D3E2;">Neutral Stroke 1</code></div>
+                  <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#9EB4C8;">Neutral Stroke 1 Hover</code></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <h2 class="text-sm font-semibold text-slate-900">Input / Field</h2>
+              <span class="rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-violet-800">Neutral + Stroke Brand</span>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div class="rounded-xl p-4" style="background:#EFF4F8;">
+                <label class="mb-1 block text-xs font-medium" style="color:#32475D;">Correo electrónico</label>
+                <input value="nombre@empresa.com" class="w-full rounded-md border px-3 py-2 text-sm outline-none" style="background:#FFFFFF;border-color:#097DBB;color:#1E2B38;" />
+                <p class="mt-2 text-xs" style="color:#32475D;">Campo enfocado: el borde pasa a token de marca.</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <span class="token-chip"><span class="dot" style="background:#FFFFFF;border:1px solid #cbd5e1;"></span>Neutral.Background.1.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#1E2B38;"></span>Neutral.Foreground.1.Rest</span>
+                  <span class="token-chip"><span class="dot" style="background:#097DBB;"></span>Neutral.Stroke.Brand.Rest</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Stroke / Brand</div>
+                  <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#C4D3E2;">Neutral/Stroke.1</code></div>
+                  <div class="figma-token-row"><span>Focus</span><code style="--token-dot:#097DBB;">Info/Base</code></div>
+                  <div class="figma-token-row"><span>Focus ext</span><code style="--token-dot:#BFE1F2;">Info/Lighter70</code></div>
+                </div>
+                <div class="figma-token-card">
+                  <div class="figma-token-title">Neutral / Foreground</div>
+                  <div class="figma-token-row"><span>Text</span><code style="--token-dot:#1E2B38;">Foreground.1.Rest</code></div>
+                  <div class="figma-token-row"><span>Helper</span><code style="--token-dot:#32475D;">Foreground.3.Rest</code></div>
+                  <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9AA8B8;">Foreground.1.Disabled</code></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Kebab Dropdown</h2>
+          <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="grid gap-4 lg:grid-cols-[1fr_auto_320px] lg:items-center">
+              <div class="rounded-lg border border-slate-300 bg-white shadow-sm">
+                <div class="divide-y divide-slate-100 text-sm text-slate-700">
+                  <div class="px-3 py-2">Cambiar estado</div>
+                  <div class="px-3 py-2">Auto-excluir</div>
+                  <div class="bg-slate-100 px-3 py-2">Ajuste manual</div>
+                  <div class="px-3 py-2">Asignar borno</div>
+                  <div class="px-3 py-2">Bloquear retiradas</div>
+                </div>
+              </div>
+              <div class="hidden flex-col items-center gap-12 text-2xl text-slate-500 lg:flex">
+                <span>→</span>
+                <span>→</span>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <p class="mb-1 text-xs font-semibold text-slate-500">Background y Hover</p>
+                  <div class="figma-token-card">
+                    <div class="figma-token-title">Neutral / Background / 1</div>
+                    <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                    <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#F1F5F9;">Neutral/Lighter90</code></div>
+                    <div class="figma-token-row"><span>Select</span><code style="--token-dot:#DBECF8;">Info/Lighter90</code></div>
+                    <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#D4DFEA;">Neutral/Lighter70</code></div>
+                  </div>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-semibold text-slate-500">Fuentes</p>
+                  <div class="figma-token-card">
+                    <div class="figma-token-title">Neutral / Foreground / 2</div>
+                    <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#32475D;">Neutral/Darker50</code></div>
+                    <div class="figma-token-row"><span>Select</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                    <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9AA8B8;">Neutral/Lighter70</code></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Checkbox</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell">
+              <p class="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Matriz de estados</p>
+              <div class="space-y-2">
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-400 bg-white"></span>
+                  <span class="text-xs text-slate-600">Rest · checkbox sin seleccionar</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border-2 border-slate-500 bg-slate-50"></span>
+                  <span class="text-xs text-slate-600">Hover · borde reforzado</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-rose-500 bg-white"></span>
+                  <span class="text-xs text-slate-600">Error · no seleccionado</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-rose-500 bg-white text-[11px] text-slate-700">✓</span>
+                  <span class="text-xs text-slate-600">Error · seleccionado</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-sky-600 bg-sky-500 text-[11px] text-white">✓</span>
+                  <span class="text-xs text-slate-600">Selected principal · check blanco</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-sky-200 bg-sky-100 text-[11px] text-slate-700">✓</span>
+                  <span class="text-xs text-slate-600">Selected suave · check oscuro</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-300 bg-slate-100"></span>
+                  <span class="text-xs text-slate-600">Disabled · sin seleccionar</span>
+                </div>
+                <div class="grid items-center gap-2 rounded-md border border-slate-200 bg-white p-2 sm:grid-cols-[auto_1fr]">
+                  <span class="inline-flex h-5 w-5 items-center justify-center rounded border border-slate-200 bg-slate-100 text-[11px] text-slate-300">✓</span>
+                  <span class="text-xs text-slate-600">Disabled · seleccionado</span>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Stroke / 1</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#94A3B8;">Neutral/Stroke.1</code></div>
+                <div class="figma-token-row"><span>Hover ext</span><code style="--token-dot:#64748B;">Neutral/Stroke.1.HoverExt</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#E2E8F0;">Neutral/Stroke.1.Disabled</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Status / Danger / Stroke</div>
+                <div class="figma-token-row"><span>Error</span><code style="--token-dot:#E11D48;">Status.Danger.Stroke</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Brand / Background / 1</div>
+                <div class="figma-token-row"><span>Selected</span><code style="--token-dot:#3B82F6;">Primary/Base</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#2563EB;">Primary/Darker10</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#BFDBFE;">Primary/Lighter70</code></div>
+                <div class="figma-token-row"><span>Check icon</span><code style="--token-dot:#FFFFFF;">Neutral/Foreground.OnBrand</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Foreground / On Brand</div>
+                <div class="figma-token-row"><span>Selected</span><code style="--token-dot:#FFFFFF;">Neutral/Foreground.OnBrand</code></div>
+                <div class="figma-token-row"><span>Error sel.</span><code style="--token-dot:#334155;">Neutral/Foreground.1</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Foreground / 2</div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#94A3B8;">Neutral/Foreground.2.Disabled</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Tablas</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell overflow-x-auto">
+              <table class="min-w-[520px] w-full border-separate border-spacing-0 text-xs">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700">
+                    <th class="border border-slate-200 px-2 py-1.5 text-left">Header</th>
+                    <th class="border border-slate-200 px-2 py-1.5 text-left">Header</th>
+                    <th class="border border-slate-200 px-2 py-1.5 text-left">Header</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="border border-slate-200 px-2 py-1.5">Celda</td><td class="border border-slate-200 px-2 py-1.5">Celda</td><td class="border border-slate-200 px-2 py-1.5">Celda</td></tr>
+                  <tr class="bg-blue-50"><td class="border border-slate-200 px-2 py-1.5">Celda (hover)</td><td class="border border-slate-200 px-2 py-1.5">Celda</td><td class="border border-slate-200 px-2 py-1.5">Celda</td></tr>
+                  <tr class="bg-blue-100"><td class="border border-slate-200 px-2 py-1.5">Celda (selected)</td><td class="border border-slate-200 px-2 py-1.5">Celda</td><td class="border border-slate-200 px-2 py-1.5">Celda</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Background / 1</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#EFF6FF;">Neutral/Lighter90</code></div>
+                <div class="figma-token-row"><span>Select</span><code style="--token-dot:#DBEAFE;">Info/Lighter90</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#D4DFEA;">Neutral/Lighter70</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Foreground / 2</div>
+                <div class="figma-token-row"><span>Cell text</span><code style="--token-dot:#334155;">Neutral/Darker50</code></div>
+                <div class="figma-token-row"><span>Select</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#9AA8B8;">Neutral/Lighter70</code></div>
+                <div class="figma-token-row"><span>Header</span><code style="--token-dot:#1E293B;">Neutral/Foreground.1</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Hero</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell">
+              <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div class="grid gap-3 lg:grid-cols-[220px_1fr_1fr]">
+                  <div class="space-y-2 border-b border-slate-200 pb-2 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-3">
+                    <p class="text-lg font-semibold text-slate-800">Gabriel Moreira</p>
+                    <div class="flex flex-wrap gap-1">
+                      <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] text-slate-700">PendingDrawal</span>
+                      <span class="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] text-slate-700">Bonus abusers</span>
+                    </div>
+                    <p class="text-xs text-slate-500">email · gabriel89@gmail.com</p>
+                  </div>
+                  <div class="space-y-2 border-b border-slate-200 pb-2 lg:border-b-0 lg:border-r lg:pb-0 lg:px-3">
+                    <div class="flex items-center justify-between text-xs"><span class="text-slate-500">Status</span><span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-700">ACTIVE</span></div>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                      <span>KYC ✓ Verified</span><span>Documentation ✓ Updated</span>
+                      <span>Fraud ✓ Verified</span><span>Total docs: 60</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2 lg:pl-3">
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div class="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700">Real · 10,00 EUR</div>
+                      <div class="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700">Bonus · 10,00 EUR</div>
+                      <div class="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700">Depósitos · 000,00</div>
+                      <div class="rounded border border-slate-200 bg-white px-2 py-1 text-slate-700">Retiradas · 000,00</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Typography / 2</div>
+                <div class="figma-token-row"><span>Title</span><code style="--token-dot:#1E293B;">Neutral Azulado/Darker70</code></div>
+                <div class="figma-token-row"><span>Body</span><code style="--token-dot:#334155;">Neutral Azulado/Darker50</code></div>
+                <div class="figma-token-row"><span>Secondary</span><code style="--token-dot:#64748B;">Neutral Azulado/Darker30</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Neutral / Background / 2</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#F8FAFC;">Neutral Azulado/Lighter95</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#D4DFEA;">Neutral Azulado/Lighter70</code></div>
+                <div class="figma-token-row"><span>Select</span><code style="--token-dot:#BFE1F2;">Info/Lighter30</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Botones (con variantes)</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell">
+              <div class="flex flex-wrap gap-2">
+                <button class="rounded-lg bg-blue-700 px-4 py-2 text-xs font-semibold text-white">Primary</button>
+                <button class="rounded-lg bg-blue-800 px-4 py-2 text-xs font-semibold text-white">Primary Hover</button>
+                <button class="rounded-lg bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-500">Disabled</button>
+                <button class="rounded-lg border border-blue-700 bg-white px-4 py-2 text-xs font-semibold text-blue-700">Secondary</button>
+                <button class="rounded-lg px-4 py-2 text-xs font-semibold text-blue-700 underline">Link</button>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Brand / Background / 1</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#1D4ED8;">Primary/Base</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#1E40AF;">Primary/Darker30</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#BFDBFE;">Primary/Lighter70</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Foreground / Stroke</div>
+                <div class="figma-token-row"><span>On brand</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                <div class="figma-token-row"><span>Secondary stroke</span><code style="--token-dot:#2563EB;">Neutral.Stroke.Brand</code></div>
+                <div class="figma-token-row"><span>Link</span><code style="--token-dot:#2563EB;">Neutral.Foreground.Link</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Inputs + validación</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell">
+              <div class="grid gap-2 sm:grid-cols-2">
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">Rest</p>
+                  <input value="Placeholder" class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-xs text-slate-700" />
+                </div>
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">Hover</p>
+                  <input value="Hover state" class="w-full rounded border border-slate-400 bg-white px-3 py-2 text-xs text-slate-700" />
+                </div>
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">Focus</p>
+                  <input value="Con focus" class="w-full rounded border-2 border-blue-600 bg-white px-3 py-[7px] text-xs text-slate-700 outline-none" />
+                </div>
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">Filled</p>
+                  <input value="valor@empresa.com" class="w-full rounded border border-slate-300 bg-white px-3 py-2 text-xs text-slate-800" />
+                </div>
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-rose-600">Error</p>
+                  <input value="Error" class="w-full rounded border border-rose-600 bg-white px-3 py-2 text-xs text-slate-700" />
+                  <p class="mt-1 text-[11px] text-rose-600">Formato de correo invalido</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">Disabled</p>
+                  <input value="Disabled" class="w-full rounded border border-slate-200 bg-slate-100 px-3 py-2 text-xs text-slate-400" />
+                </div>
+                <div class="sm:col-span-2">
+                  <p class="mb-1 text-[11px] font-semibold text-slate-500">ReadOnly</p>
+                  <input value="Solo lectura" readonly class="w-full rounded border border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-700" />
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Inputs / Stroke</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#CBD5E1;">Neutral.Stroke.1</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#94A3B8;">Neutral.Stroke.1.Hover</code></div>
+                <div class="figma-token-row"><span>Focus</span><code style="--token-dot:#2563EB;">Neutral.Stroke.Brand</code></div>
+                <div class="figma-token-row"><span>Error</span><code style="--token-dot:#E11D48;">Status.Danger.Stroke</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#E2E8F0;">Neutral.Stroke.1.Disabled</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Inputs / Background</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#FFFFFF;">Neutral.Background.1.Rest</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#F8FAFC;">Neutral.Background.1.Hover</code></div>
+                <div class="figma-token-row"><span>ReadOnly</span><code style="--token-dot:#F8FAFC;">Neutral.Background.2.Rest</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#F1F5F9;">Neutral.Background.Disabled</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Inputs / Foreground + Validation</div>
+                <div class="figma-token-row"><span>Value</span><code style="--token-dot:#1E293B;">Neutral.Foreground.1.Rest</code></div>
+                <div class="figma-token-row"><span>Placeholder</span><code style="--token-dot:#64748B;">Neutral.Foreground.3.Rest</code></div>
+                <div class="figma-token-row"><span>Helper</span><code style="--token-dot:#64748B;">Neutral.Foreground.3.Rest</code></div>
+                <div class="figma-token-row"><span>Error text</span><code style="--token-dot:#E11D48;">Status.Danger.Foreground</code></div>
+                <div class="figma-token-row"><span>Disabled text</span><code style="--token-dot:#94A3B8;">Neutral.Foreground.Disabled</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 class="text-sm font-semibold text-slate-900">Cards de lista</h2>
+          <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div class="mock-shell">
+              <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="rounded-lg border border-slate-300 bg-white p-3">
+                  <p class="text-[11px] font-semibold text-slate-500">Rest</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-800">Label</p>
+                  <p class="mt-1 text-xs text-slate-500">Description</p>
+                </div>
+                <div class="rounded-lg border border-slate-400 bg-slate-50 p-3">
+                  <p class="text-[11px] font-semibold text-slate-500">Hover</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-800">Label</p>
+                  <p class="mt-1 text-xs text-slate-500">Description</p>
+                </div>
+                <div class="rounded-lg border border-blue-300 bg-blue-50 p-3">
+                  <p class="text-[11px] font-semibold text-blue-700">Focus</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-800">Label</p>
+                  <p class="mt-1 text-xs text-slate-500">Description</p>
+                </div>
+                <div class="rounded-lg border border-blue-200 bg-blue-100 p-3">
+                  <p class="text-[11px] font-semibold text-blue-700">Selected</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-800">Label</p>
+                  <p class="mt-1 text-xs text-slate-500">Description</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-100 p-3">
+                  <p class="text-[11px] font-semibold text-slate-400">Disabled</p>
+                  <p class="mt-1 text-xs font-semibold text-slate-400">Label</p>
+                  <p class="mt-1 text-xs text-slate-400">Description</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <div class="figma-token-card">
+                <div class="figma-token-title">Cards / Stroke / 1</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#CBD5E1;">Neutral.Stroke.1.Rest</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#94A3B8;">Neutral.Stroke.1.Hover</code></div>
+                <div class="figma-token-row"><span>Focus</span><code style="--token-dot:#60A5FA;">Neutral.Stroke.Brand</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#E2E8F0;">Neutral.Stroke.1.Disabled</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Cards / Background / 1</div>
+                <div class="figma-token-row"><span>Rest</span><code style="--token-dot:#FFFFFF;">Neutral/Lighter100</code></div>
+                <div class="figma-token-row"><span>Hover</span><code style="--token-dot:#EFF6FF;">Neutral/Lighter90</code></div>
+                <div class="figma-token-row"><span>Focus</span><code style="--token-dot:#F8FAFC;">Neutral/Lighter95</code></div>
+                <div class="figma-token-row"><span>Select</span><code style="--token-dot:#DBEAFE;">Info/Lighter90</code></div>
+                <div class="figma-token-row"><span>Disabled</span><code style="--token-dot:#F1F5F9;">Neutral/Lighter70</code></div>
+              </div>
+              <div class="figma-token-card">
+                <div class="figma-token-title">Cards / Typography + Icons</div>
+                <div class="figma-token-row"><span>Label</span><code style="--token-dot:#1E293B;">Neutral.Foreground.1</code></div>
+                <div class="figma-token-row"><span>Description</span><code style="--token-dot:#64748B;">Neutral.Foreground.3</code></div>
+                <div class="figma-token-row"><span>Selected text</span><code style="--token-dot:#1E293B;">Neutral.Foreground.1</code></div>
+                <div class="figma-token-row"><span>Icon</span><code style="--token-dot:#475569;">Neutral.Foreground.2</code></div>
+                <div class="figma-token-row"><span>Disabled text</span><code style="--token-dot:#94A3B8;">Neutral.Foreground.Disabled</code></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-sm font-semibold text-slate-900">Alertas de estado (Status)</h2>
+            <span class="rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-bold uppercase text-rose-800">Error / Warning / Success / Info</span>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <div class="rounded-lg border px-3 py-3" style="background:#D12B3D;color:#7A353D;border-color:#D12B3D;">
+              <p class="text-xs font-semibold">Error: no se pudo guardar.</p>
+              <p class="mt-1 text-[11px] opacity-90">Status.Error.Background.Rest + Status.Error.Foreground.On Error</p>
+            </div>
+            <div class="rounded-lg border px-3 py-3" style="background:#F5C56D;color:#9B732D;border-color:#D3A453;">
+              <p class="text-xs font-semibold">Warning: revisa los campos.</p>
+              <p class="mt-1 text-[11px] opacity-90">Status.Warning.Background.Rest + Status.Warning.Foreground.On Warning</p>
+            </div>
+            <div class="rounded-lg border px-3 py-3" style="background:#7FCF9B;color:#1F6B3B;border-color:#57A874;">
+              <p class="text-xs font-semibold">Success: cambios aplicados.</p>
+              <p class="mt-1 text-[11px] opacity-90">Status.Success.Background.Rest + Status.Success.Foreground.On Success</p>
+            </div>
+            <div class="rounded-lg border px-3 py-3" style="background:#8CC9E5;color:#245A73;border-color:#4EA7D5;">
+              <p class="text-xs font-semibold">Info: hay una actualización.</p>
+              <p class="mt-1 text-[11px] opacity-90">Status.Info.Background.Rest + Status.Info.Foreground.On Info</p>
+            </div>
+          </div>
+          <div class="mt-4 grid gap-2">
+            <div class="token-note">En feedback semántico, evita usar Brand/Neutral por parecido visual: el rol correcto es <strong>Status</strong>.</div>
+            <div class="token-note">Si hay borde de severidad, usa la rama <strong>Status.&lt;Tipo&gt;.Stroke.Rest</strong>.</div>
+          </div>
+        </section>
+
+        <div class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-sm">
+          <table class="w-full min-w-[760px] text-left">
+            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-3 py-3 font-semibold">Componente</th>
+                <th class="px-3 py-3 font-semibold">Parte visual</th>
+                <th class="px-3 py-3 font-semibold">Material (rol)</th>
+                <th class="px-3 py-3 font-semibold">BOWL válido</th>
+                <th class="px-3 py-3 font-semibold">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Button CTA</td><td class="px-3 py-2.5">Fondo</td><td class="px-3 py-2.5 font-token text-xs">primary</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Brand.Background.1</td><td class="px-3 py-2.5">Rest/Hover/Disabled</td></tr>
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Button CTA</td><td class="px-3 py-2.5">Texto</td><td class="px-3 py-2.5 font-token text-xs">onPrimary</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Neutral.Foreground.On Brand</td><td class="px-3 py-2.5">Rest/Disabled</td></tr>
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Link</td><td class="px-3 py-2.5">Texto de enlace</td><td class="px-3 py-2.5 font-token text-xs">primary (text)</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Neutral.Foreground.Link</td><td class="px-3 py-2.5">Rest/Hover</td></tr>
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Card</td><td class="px-3 py-2.5">Superficies</td><td class="px-3 py-2.5 font-token text-xs">surface/container</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Neutral.Background.1/2/3</td><td class="px-3 py-2.5">Rest</td></tr>
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Input</td><td class="px-3 py-2.5">Borde focus</td><td class="px-3 py-2.5 font-token text-xs">outline focus</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Neutral.Stroke.Brand</td><td class="px-3 py-2.5">Rest/Focus</td></tr>
+              <tr><td class="px-3 py-2.5 font-medium text-slate-800">Alert</td><td class="px-3 py-2.5">Fondo + texto</td><td class="px-3 py-2.5 font-token text-xs">error/warning/success/info</td><td class="px-3 py-2.5 font-token text-xs text-blue-900">Status.&lt;Tipo&gt;.Background + Foreground</td><td class="px-3 py-2.5">Rest</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article id="page-guia-semantica" class="page-section hidden max-w-6xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Guía didáctica</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Guía semántica</h1>
+        <p class="mt-3 max-w-4xl text-sm leading-relaxed text-slate-600">
+          Separamos los colores por <strong class="text-slate-800">intención</strong>, no por componente ni por “tipo de azul”.
+          La base del sistema se apoya en tres grupos: <strong class="text-slate-800">Neutral</strong>, <strong class="text-slate-800">Brand</strong> y <strong class="text-slate-800">Status</strong>.
+          Un token completo combina intención + uso + estado + contexto.
+        </p>
+
+        <section class="mt-6 grid gap-4 lg:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Neutral</h2>
+            <p class="mt-2 text-sm text-slate-600">Cubre la mayor parte de la UI: texto, iconos, fondos base y bordes.</p>
+            <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+              <p><strong>Ejemplo visual</strong>: card base + título + borde.</p>
+              <div class="mt-2 rounded border border-slate-300 bg-white p-2">
+                <p class="text-xs font-semibold text-slate-800">Título neutral</p>
+                <p class="text-xs text-slate-500">Descripción neutral</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Brand</h2>
+            <p class="mt-2 text-sm text-slate-600">Expresa identidad o acción principal. No se usa para texto corriente.</p>
+            <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+              <p><strong>Ejemplo visual</strong>: botón primario.</p>
+              <button class="mt-2 rounded bg-blue-700 px-3 py-1.5 text-xs font-semibold text-white">Acción principal</button>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Status</h2>
+            <p class="mt-2 text-sm text-slate-600">Se reserva para error, éxito, warning e info. Nunca decorativo.</p>
+            <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+              <p><strong>Ejemplo visual</strong>: feedback de error real.</p>
+              <div class="mt-2 rounded border border-rose-300 bg-rose-50 px-2 py-1 text-rose-700">Error de validación</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-6 grid gap-4 lg:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Uso: Background · Foreground · Stroke</h2>
+            <div class="mt-3 space-y-2 text-sm text-slate-600">
+              <p><strong>Background</strong>: relleno/superficie.</p>
+              <p><strong>Foreground</strong>: contenido (texto/iconos).</p>
+              <p><strong>Stroke</strong>: bordes/contornos/divisores.</p>
+            </div>
+            <div class="mt-3 grid gap-2 sm:grid-cols-3 text-xs">
+              <div class="rounded border border-slate-300 bg-white p-2 text-center">Background</div>
+              <div class="rounded border border-slate-300 bg-slate-50 p-2 text-center text-slate-700">Foreground</div>
+              <div class="rounded border border-slate-300 bg-white p-2 text-center">Stroke</div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Estado: Rest · Hover · Pressed · Disabled</h2>
+            <p class="mt-3 text-sm text-slate-600">Cada intención/uso cambia por estado sin perder significado.</p>
+            <div class="mt-3 grid gap-2 sm:grid-cols-2 text-xs">
+              <div class="rounded border border-slate-300 bg-white p-2">Rest</div>
+              <div class="rounded border border-slate-400 bg-slate-50 p-2">Hover</div>
+              <div class="rounded border border-blue-500 bg-blue-50 p-2">Pressed/Select</div>
+              <div class="rounded border border-slate-200 bg-slate-100 p-2 text-slate-500">Disabled</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-6 grid gap-4 lg:grid-cols-2">
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Contexto: On Brand · Inverted · Subtle</h2>
+            <div class="mt-3 space-y-2 text-sm text-slate-600">
+              <p><strong>On Brand</strong>: foreground sobre superficie brand.</p>
+              <p><strong>Inverted</strong>: versión para fondos oscuros/invertidos.</p>
+              <p><strong>Subtle</strong>: versión suave de baja intensidad visual.</p>
+            </div>
+            <div class="mt-3 grid gap-2 text-xs">
+              <div class="rounded bg-blue-700 px-2 py-1 text-white">On Brand (texto sobre brand)</div>
+              <div class="rounded bg-slate-900 px-2 py-1 text-slate-100">Inverted</div>
+              <div class="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-slate-700">Subtle</div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="text-sm font-bold text-blue-700">Reglas de consistencia</h2>
+            <ul class="mt-3 space-y-2 text-sm text-slate-600">
+              <li>• No usar <strong>Status</strong> para decorar.</li>
+              <li>• No usar <strong>Brand</strong> para texto de lectura normal.</li>
+              <li>• Si el token dice <strong>OnBrand</strong>, debe vivir sobre superficie brand.</li>
+              <li>• Mapear por <strong>intención</strong>, no por nombre de componente.</li>
+            </ul>
+          </div>
+        </section>
+      </article>
+
+      <!-- MAPA VISUAL: guías oficiales -->
+      <article id="page-mapa-visual" class="page-section hidden max-w-5xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Referencia</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Mapa visual: roles (Material) vs alias (Fluent)</h1>
+        <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
+          Esta sección imita <strong class="text-slate-800">el tipo de contenido</strong> que muestran las guías: en Material, el reparto por
+          <em>roles</em> de color (superficie, contenedores, acentos, error…); en Fluent, el mismo significado organizado por
+          <em>familias de alias</em> (Neutral, Brand, Status) como en la documentación de tokens.
+        </p>
+        <p class="mt-2 text-xs text-slate-500">
+          Fuentes oficiales:
+          <a class="text-blue-600 underline hover:text-blue-800" href="https://m3.material.io/styles/color/roles" target="_blank" rel="noopener noreferrer">Material Design 3 — Color roles</a>
+          ·
+          <a class="text-blue-600 underline hover:text-blue-800" href="https://fluent2.microsoft.design/color-tokens" target="_blank" rel="noopener noreferrer">Fluent 2 — Web alias color tokens</a>
+        </p>
+
+        <div class="mt-10 grid gap-10 lg:grid-cols-2">
+          <!-- Material: esquema tipo "roles" M3 -->
+          <section class="col-material flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+              <span class="rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-800">Material 3</span>
+              <span class="text-[10px] text-slate-400">Idea de la guía de roles</span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">
+              La página de <a class="text-violet-700 underline" href="https://m3.material.io/styles/color/roles" target="_blank" rel="noopener noreferrer">roles de color</a> agrupa
+              <strong>cómo se combinan</strong> superficies, contenedores y acentos. Abajo, un <strong>mock compacto</strong> con etiquetas de rol (no es un tema oficial).
+            </p>
+
+            <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 shadow-lg">
+              <div class="bg-m3-primary px-5 py-4 text-center">
+                <p class="text-[11px] font-token text-m3-on-primary">primary</p>
+                <p class="text-sm font-semibold text-m3-on-primary">onPrimary</p>
+              </div>
+              <div class="bg-m3-surface px-5 py-5 text-m3-on-surface">
+                <p class="text-base font-semibold">onSurface</p>
+                <p class="mt-1.5 text-sm text-m3-on-surface-variant">onSurfaceVariant</p>
+                <div class="mt-5 grid grid-cols-2 gap-3">
+                  <div class="rounded-xl bg-m3-primary-container px-3 py-4 text-center">
+                    <p class="text-[10px] font-token leading-tight text-m3-on-primary-container">primaryContainer</p>
+                    <p class="text-[10px] font-token text-m3-on-primary-container">onPrimaryContainer</p>
+                  </div>
+                  <div class="rounded-xl bg-m3-error-container px-3 py-4 text-center">
+                    <p class="text-[10px] font-token leading-tight text-m3-on-error-container">errorContainer</p>
+                    <p class="text-[10px] font-token text-m3-on-error-container">onErrorContainer</p>
+                  </div>
+                </div>
+                <div class="mt-5 flex flex-wrap justify-center gap-2">
+                  <span class="rounded-full bg-m3-error px-4 py-2 text-[11px] font-token text-m3-on-error">error · onError</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-px bg-slate-200">
+                <div class="flex aspect-[4/3] flex-col items-center justify-center bg-m3-surface-variant p-3 text-center">
+                  <span class="text-[10px] font-token text-m3-on-surface-variant">surfaceVariant</span>
+                </div>
+                <div class="flex aspect-[4/3] flex-col items-center justify-center bg-m3-secondary p-3 text-center text-m3-on-secondary">
+                  <span class="text-[10px] font-token">secondary</span>
+                </div>
+                <div class="flex aspect-[4/3] flex-col items-center justify-center bg-m3-tertiary p-3 text-center text-white">
+                  <span class="text-[10px] font-token">tertiary</span>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Colores: <code class="rounded bg-slate-100 px-1">theme.extend.colors.m3.*</code> · tonos inspirados en la paleta M3.</p>
+          </section>
+
+          <!-- Fluent: alias por familia (como Fluent2) -->
+          <section class="col-fluent flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-blue-100">
+            <div class="flex items-center justify-between gap-2">
+              <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-800">Fluent 2</span>
+              <span class="text-[10px] text-slate-400">Idea de la guía de alias</span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">
+              En <a class="text-blue-700 underline" href="https://fluent2.microsoft.design/color-tokens" target="_blank" rel="noopener noreferrer">Color tokens</a>, los alias se
+              agrupan en <strong>Neutral</strong>, <strong>Brand</strong>, <strong>Status</strong>, etc. (y subniveles como Background1/2/3). Aquí va
+              un <strong>mock compacto</strong> con los mismos nombres de alias que en la documentación.
+            </p>
+
+            <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200 shadow-lg">
+              <div class="bg-bowl-neutral-background-1 px-5 py-4">
+                <p class="text-[11px] font-token text-blue-900">Neutral · colorNeutralBackground1</p>
+                <div class="mt-4 rounded-xl bg-bowl-neutral-background-2 px-4 py-4">
+                  <p class="text-[11px] font-token text-blue-900">colorNeutralBackground2</p>
+                  <div class="mt-3 rounded-lg bg-bowl-neutral-background-3 px-4 py-5 shadow-sm">
+                    <p class="text-[11px] font-token text-bowl-neutral-foreground-1">colorNeutralForeground1</p>
+                    <p class="text-[11px] font-token text-bowl-neutral-foreground-2">colorNeutralForeground2</p>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-bowl-brand-background px-5 py-4 text-center">
+                <p class="text-[11px] font-token text-bowl-neutral-foreground-on-brand">Brand · colorBrandBackground</p>
+                <p class="text-[11px] font-token text-bowl-neutral-foreground-on-brand">colorNeutralForegroundOnBrand</p>
+              </div>
+              <div>
+                <p class="bg-slate-100 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">Status · fondos (como en la tabla Fluent)</p>
+                <div class="flex flex-col gap-2 bg-slate-50 p-2">
+                  <div class="rounded-md border border-slate-200 bg-bowl-status-success-bg-1 px-3 py-4 text-center">
+                    <p class="text-[9px] font-token leading-tight text-slate-700">colorStatusSuccessBackground1</p>
+                    <p class="mt-1 text-[9px] text-slate-500">BOWL: <span class="font-token">colorStatusSuccess</span></p>
+                  </div>
+                  <div class="rounded-md border border-slate-200 bg-bowl-status-warning-bg-1 px-3 py-4 text-center">
+                    <p class="text-[9px] font-token leading-tight text-slate-700">colorStatusWarningBackground1</p>
+                    <p class="mt-1 text-[9px] text-slate-500">BOWL: <span class="font-token">colorStatusWarning</span></p>
+                  </div>
+                  <div class="rounded-md border border-slate-200 bg-bowl-status-danger-bg-1 px-3 py-4 text-center">
+                    <p class="text-[9px] font-token leading-tight text-slate-700">colorStatusDangerBackground1</p>
+                    <p class="mt-1 text-[9px] text-slate-500">BOWL: <span class="font-token">colorStatusError</span></p>
+                  </div>
+                </div>
+                <p class="border-t border-slate-100 bg-slate-50 px-4 py-3 text-[11px] text-slate-500">
+                  Los foregrounds de status (p. ej. <span class="font-token">colorStatusDangerForeground1</span>) siguen la misma tabla en la guía Fluent; enlazarlos en vuestro JSON.
+                </p>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Colores: <code class="rounded bg-slate-100 px-1">theme.extend.colors.bowl.*</code> · nombres de alias según Fluent 2.</p>
+          </section>
+        </div>
+      </article>
+
+      <!-- SUPERFICIES -->
+      <article id="page-superficies" class="page-section hidden max-w-5xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Fundamentos · Superficies</p>
+        <h1 class="mt-1 text-2xl font-bold text-slate-900">Superficies neutras: capas de estructura</h1>
+        <p class="mt-3 max-w-2xl text-sm text-slate-600">Material usa <code class="rounded bg-slate-100 px-1">surface</code>, <code class="rounded bg-slate-100 px-1">surfaceVariant</code>, etc. Fluent/BOWL usa niveles <code class="rounded bg-slate-100 px-1">colorNeutralBackground1…3</code> (y más si el JSON lo define).</p>
+
+        <div class="mt-8 grid gap-6 lg:grid-cols-2">
+          <section class="col-material flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-4 flex items-center justify-between">
+              <span class="rounded-full bg-violet-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-800">Material 3</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-2 rounded-xl border border-slate-200 bg-m3-surface p-3">
+              <span class="text-[10px] font-token text-slate-500">surface → bg-m3-surface</span>
+              <div class="flex flex-1 flex-col gap-2 rounded-lg bg-m3-surface-variant p-3 shadow-inner ring-1 ring-slate-200/80">
+                <span class="text-[10px] font-token text-slate-500">surfaceVariant → bg-m3-surface-variant</span>
+                <div class="rounded-md bg-m3-surface-elevated px-3 py-4 text-center text-[10px] font-token text-slate-600">elevación / tarjeta</div>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Demo Material: colores en <code class="rounded bg-slate-100 px-1">theme.extend.colors.m3.*</code>.</p>
+          </section>
+
+          <section class="col-fluent flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ring-1 ring-blue-100">
+            <div class="mb-4 flex items-center justify-between">
+              <span class="rounded-full bg-blue-100 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-800">Fluent · BOWL</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-2 rounded-xl border border-slate-200 bg-bowl-neutral-background-1 p-3">
+              <span class="text-[10px] font-token text-blue-900/80">colorNeutralBackground1 → <span class="text-violet-700">bg-bowl-neutral-background-1</span></span>
+              <div class="flex flex-1 flex-col gap-2 rounded-lg bg-bowl-neutral-background-2 p-3 ring-1 ring-slate-200/60">
+                <span class="text-[10px] font-token text-blue-900/80">colorNeutralBackground2 → <span class="text-violet-700">bg-bowl-neutral-background-2</span></span>
+                <div class="rounded-md bg-bowl-neutral-background-3 px-3 py-4 text-center shadow-sm ring-1 ring-slate-200/80">
+                  <span class="text-[10px] font-token text-blue-900">colorNeutralBackground3 → <span class="text-violet-700">bg-bowl-neutral-background-3</span></span>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Misma idea: niveles neutros; las clases Tailwind reflejan el alias del tema (valores sustituibles por vuestro JSON).</p>
+          </section>
+        </div>
+
+        <div class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-sm">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Material</th>
+                <th class="px-4 py-3 font-semibold">Fluent · BOWL</th>
+                <th class="px-4 py-3 font-semibold">Dónde aplica</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-600">
+              <tr><td class="px-4 py-2 font-token text-xs">surface</td><td class="px-4 py-2 font-token text-xs text-blue-900">colorNeutralBackground1</td><td class="px-4 py-2">Lienzo base</td></tr>
+              <tr><td class="px-4 py-2 font-token text-xs">surfaceVariant</td><td class="px-4 py-2 font-token text-xs text-blue-900">colorNeutralBackground2</td><td class="px-4 py-2">Franjas, sidebar, cabeceras de tabla</td></tr>
+              <tr><td class="px-4 py-2 font-token text-xs">card / elevación</td><td class="px-4 py-2 font-token text-xs text-blue-900">colorNeutralBackground3</td><td class="px-4 py-2">Paneles y tarjetas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <!-- TOKENS LIGHT (JSON exportado) -->
+      <article id="page-tokens-bowl" class="page-section hidden max-w-6xl px-4 py-8 sm:px-8">
+        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Referencia · BOWL</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Tokens de color · Light</h1>
+        <p class="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600">
+          Listado generado desde <strong>Light.tokens.json</strong>: se incluyen solo las colecciones semánticas
+          <span class="font-token text-blue-800">Neutral</span>, <span class="font-token text-blue-800">Brand</span> y <span class="font-token text-blue-800">Status</span>.
+          Quedan fuera las ramas marcadas con <span class="text-red-600">❌</span> en el archivo (p. ej. botones legacy, Surface duplicado, States, etc.).
+        </p>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label class="sr-only" for="tokens-bowl-filter">Filtrar tokens</label>
+          <input id="tokens-bowl-filter" type="search" placeholder="Buscar por ruta o hex…" autocomplete="off"
+            class="w-full max-w-md rounded-xl border border-slate-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+          <p id="tokens-bowl-status" class="text-sm text-slate-500">Listo al abrir la sección.</p>
+        </div>
+        <div id="tokens-bowl-root" class="mt-10 space-y-12"></div>
+      </article>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-400">
+    Comparativa didáctica Material ↔ Fluent · BOWL · Inspirado en la estructura de navegación tipo
+    <a class="text-slate-600 underline hover:text-slate-800" href="https://raul-marin.github.io/face-to-face/" target="_blank" rel="noopener noreferrer">Face to Face</a>
+  </footer>
+
+<script id="bowl-tokens-light-embed" type="application/json">{"source":"Light.tokens.json","includedGroups":["✅Neutral","✅Brand","✅Status"],"count":89,"items":[{"path":"Neutral / Foreground / 1 / Rest","hex":"#1E2B38","alias":"Neutral Azulado/Darker70"},{"path":"Neutral / Foreground / 1 / Disabled","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Foreground / 1 / Brand / Rest","hex":"#097DBB","alias":"Primary/Base"},{"path":"Neutral / Foreground / 1 / Brand / Hover","hex":"#1F4F69","alias":"Primary/Darker30"},{"path":"Neutral / Foreground / 1 / Brand / Disabled","hex":"#ABD9F2","alias":"Primary/Lighter70"},{"path":"Neutral / Foreground / 2 / Rest","hex":"#32475D","alias":"Neutral Azulado/Darker50"},{"path":"Neutral / Foreground / 2 / Select","hex":"#FFFFFF","alias":"Neutral Azulado/Lighter100"},{"path":"Neutral / Foreground / 2 / Disabled","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Foreground / 3 / Rest","hex":"#456483","alias":"Neutral Azulado/Darker30"},{"path":"Neutral / Foreground / 3 / Select","hex":"#456483","alias":"Neutral Azulado/Darker30"},{"path":"Neutral / Foreground / 3 / Disabled","hex":"#B0C7DE","alias":"Neutral Azulado/Lighter50"},{"path":"Neutral / Foreground / Link / Rest","hex":"#0DA2E7","alias":"Info/Base"},{"path":"Neutral / Foreground / Link / Hover","hex":"#208BBD","alias":"Info/Darker10"},{"path":"Neutral / Foreground / On Brand / Rest","hex":"#FFFFFF","alias":"Neutral Azulado/Lighter100"},{"path":"Neutral / Foreground / On Status / Rest","hex":"#FFFFFF","alias":"Neutral Azulado/Lighter100"},{"path":"Neutral / Background / 1 / Rest","hex":"#FFFFFF","alias":"Neutral Azulado/Lighter100"},{"path":"Neutral / Background / 1 / Hover","hex":"#EFF4F8","alias":"Neutral Azulado/Lighter90"},{"path":"Neutral / Background / 1 / Select","hex":"#E8F5FB","alias":"Info/Lighter90"},{"path":"Neutral / Background / 1 / Disabled","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Background / 2 / Rest","hex":"#F7F9FC","alias":"Neutral Azulado/Lighter95"},{"path":"Neutral / Background / 2 / Hover","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Background / 2 / Select","hex":"#60BAE4","alias":"Info/Lighter30"},{"path":"Neutral / Background / 3 / Rest","hex":"#EFF4F8","alias":"Neutral Azulado/Lighter90"},{"path":"Neutral / Background / 3 / Hover","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Background / 3 / Select","hex":"#60BAE4","alias":"Info/Lighter30"},{"path":"Neutral / Transparent / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Neutral / Stroke / 1 / Rest","hex":"#EFF4F8","alias":"Neutral Azulado/Lighter90"},{"path":"Neutral / Stroke / 2 / Rest","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Neutral / Stroke / 3 / Rest","hex":"#B0C7DE","alias":"Neutral Azulado/Lighter50"},{"path":"Neutral / Stroke / 3 / Hover","hex":"#688190","alias":"Neutral Gris/Lighter10"},{"path":"Neutral / Stroke / 3 / HoverExternal","hex":"#CCD5DA","alias":"Neutral Gris/Lighter70"},{"path":"Neutral / Stroke / 3 / Select","hex":"#456483","alias":"Neutral Azulado/Darker30"},{"path":"Neutral / Stroke / Brand / 1 / Rest","hex":"#097DBB","alias":"Primary/Base"},{"path":"Neutral / Stroke / Brand / 1 / Hover","hex":"#1F4F69","alias":"Primary/Darker30"},{"path":"Neutral / Stroke / Compound / Rest","hex":"#719AC3","alias":"Neutral Azulado/Lighter10"},{"path":"Neutral / Stroke / Compound / Hover","hex":"#688190","alias":"Neutral Gris/Lighter10"},{"path":"Neutral / Stroke / Compound / HoverInternal","hex":"#32475D","alias":"Neutral Azulado/Darker50"},{"path":"Neutral / Stroke / Compound / HoverExternal","hex":"#CCD5DA","alias":"Neutral Gris/Lighter70"},{"path":"Neutral / Stroke / Compound / Select","hex":"#456483","alias":"Neutral Azulado/Darker30"},{"path":"Neutral / Stroke / Compound / Disabled","hex":"#D0DDEB","alias":"Neutral Azulado/Lighter70"},{"path":"Brand / Background / 1 / Rest","hex":"#097DBB","alias":"Primary/Base"},{"path":"Brand / Background / 1 / Hover","hex":"#1F4F69","alias":"Primary/Darker30"},{"path":"Brand / Background / 1 / Disabled","hex":"#ABD9F2","alias":"Primary/Lighter70"},{"path":"Brand / Background / 1 / Subtle / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 1 / Subtle / Hover","hex":"#E4F3FB","alias":"Primary/Lighter90"},{"path":"Brand / Background / 1 / Subtle / Disabled","hex":"#ABD9F2","alias":"Primary/Lighter70"},{"path":"Brand / Background / 1 / Link / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 1 / Link / Hover","hex":"#ABD9F2","alias":"Primary/Lighter70"},{"path":"Brand / Background / 1 / Link / Disabled","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 2 / Rest","hex":"#40567D","alias":"Secundary/Base"},{"path":"Brand / Background / 2 / Hover","hex":"#353F4F","alias":"Secundary/Darker30"},{"path":"Brand / Background / 2 / Disabled","hex":"#9AA9C3","alias":"Secundary/Lighter50"},{"path":"Brand / Background / 2 / Subtle / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 2 / Subtle / Hover","hex":"#EFF4F8","alias":"Neutral Azulado/Lighter90"},{"path":"Brand / Background / 2 / Subtle / Disabled","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 2 / Link / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Background / 2 / Link / Hover","hex":"#C2CCDB","alias":"Secundary/Lighter70"},{"path":"Brand / Background / 2 / Link / Disabled","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Brand / Foreground / 1 / Rest","hex":"#097DBB","alias":"Primary/Base"},{"path":"Brand / Foreground / 1 / Hover","hex":"#1F4F69","alias":"Primary/Darker30"},{"path":"Brand / Foreground / 1 / Disabled","hex":"#ABD9F2","alias":"Primary/Lighter70"},{"path":"Brand / Foreground / 2 / Rest","hex":"#40567D","alias":"Secundary/Base"},{"path":"Brand / Foreground / 2 / Hover","hex":"#3F4F6B","alias":"Secundary/Darker10"},{"path":"Brand / Foreground / 2 / Disabled","hex":"#C2CCDB","alias":"Secundary/Lighter70"},{"path":"Status / Error / Stroke / Rest","hex":"#D12B3D","alias":"Error/Base"},{"path":"Status / Error / Background / Rest","hex":"#D12B3D","alias":"Error/Base"},{"path":"Status / Error / Background / Hover","hex":"#AC3543","alias":"Error/Darker10"},{"path":"Status / Error / Background / Disabled","hex":"#EDC3C8","alias":"Error/Lighter70"},{"path":"Status / Error / Foreground / On Error","hex":"#7A353D","alias":"Error/Darker30"},{"path":"Status / Link / Background / Rest","hex":"#FFFFFF","alias":"Transparent/White/0"},{"path":"Status / Link / Foreground / Rest","hex":"#208BBD","alias":"Info/Darker10"},{"path":"Status / Link / Foreground / Hover","hex":"#286683","alias":"Info/Darker30"},{"path":"Status / Link / Foreground / Disabled","hex":"#8DCEEC","alias":"Info/Lighter50"},{"path":"Status / Info / Background / Rest","hex":"#0DA2E7","alias":"Info/Base"},{"path":"Status / Info / Background / Hover","hex":"#208BBD","alias":"Info/Darker10"},{"path":"Status / Info / Background / Disabled","hex":"#BEE3F4","alias":"Info/Lighter70"},{"path":"Status / Info / Foreground / On info","hex":"#286683","alias":"Info/Darker30"},{"path":"Status / Info / Stroke / Focus","hex":"#0DA2E7","alias":"Info/Base"},{"path":"Status / Info / Stroke / FocusExternal","hex":"#BEE3F4","alias":"Info/Lighter70"},{"path":"Status / Success / Background / Rest","hex":"#139242","alias":"Success/Darker10"},{"path":"Status / Success / Background / Hover","hex":"#1B6536","alias":"Success/Darker30"},{"path":"Status / Success / Background / Disabled","hex":"#A8F4C4","alias":"Success/Lighter70"},{"path":"Status / Success / Foreground / On Success","hex":"#1B6536","alias":"Success/Darker30"},{"path":"Status / Warning / Background / Rest","hex":"#DE9923","alias":"Warning/Darker10"},{"path":"Status / Warning / Background / Hover","hex":"#9B732D","alias":"Warning/Darker30"},{"path":"Status / Warning / Background / Disabled","hex":"#F6E4C5","alias":"Warning/Lighter70"},{"path":"Status / Warning / Foreground / On Warning","hex":"#9B732D","alias":"Warning/Darker30"},{"path":"Status / Neutral / Background / Rest","hex":"#EFF4F8","alias":"Neutral Azulado/Lighter90"},{"path":"Status / Neutral / Foreground / On Neutral","hex":"#1E2B38","refPath":"Neutral / Foreground / 1 / Rest","resolvedFrom":"Neutral / Foreground / 1 / Rest"}]}</script>
+
+  <script>
+    (function () {
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      let tokensBowlLoaded = false;
+      let tokensBowlData = null;
+
+      var TOKENS_BOWL_STATE_ORDER = ['Rest', 'Hover', 'Disabled', 'Select', 'Focus', 'FocusExternal', 'HoverExternal', 'HoverInternal'];
+
+      function parseTokensBowlFolderState(path) {
+        var parts = path.split(' / ');
+        if (parts.length < 2) return { folder: path, state: '' };
+        return { folder: parts.slice(0, -1).join(' / '), state: parts[parts.length - 1] };
+      }
+
+      function compareTokensBowlState(a, b) {
+        var ia = TOKENS_BOWL_STATE_ORDER.indexOf(a);
+        var ib = TOKENS_BOWL_STATE_ORDER.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+        return a.localeCompare(b, 'es');
+      }
+
+      function renderTokensBowl(data, filterStr) {
+        var rootEl = document.getElementById('tokens-bowl-root');
+        if (!rootEl || !data || !data.items) return;
+        var q = (filterStr || '').trim().toLowerCase();
+        var items = data.items.filter(function (it) {
+          if (!q) return true;
+          var fs = parseTokensBowlFolderState(it.path);
+          var blob = [it.path, it.hex || '', it.alias || '', it.refPath || '', fs.folder, fs.state].join(' ').toLowerCase();
+          return blob.indexOf(q) !== -1;
+        });
+        var byRoot = {};
+        items.forEach(function (it) {
+          var rootName = it.path.split(' / ')[0] || '—';
+          if (!byRoot[rootName]) byRoot[rootName] = {};
+          var fs = parseTokensBowlFolderState(it.path);
+          if (!byRoot[rootName][fs.folder]) byRoot[rootName][fs.folder] = [];
+          byRoot[rootName][fs.folder].push({ it: it, state: fs.state });
+        });
+        var rootOrder = ['Neutral', 'Brand', 'Status'];
+        var html = '';
+        rootOrder.forEach(function (rootName) {
+          var folders = byRoot[rootName];
+          if (!folders) return;
+          var folderKeys = Object.keys(folders).sort(function (a, b) { return a.localeCompare(b, 'es'); });
+          if (!folderKeys.length) return;
+          var count = folderKeys.reduce(function (n, fk) { return n + folders[fk].length; }, 0);
+          html += '<section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">';
+          html += '<h2 class="mb-8 border-b border-slate-200 pb-3 text-lg font-semibold text-blue-700">' + escapeHtml(rootName);
+          html += ' <span class="text-base font-normal text-slate-500">(' + count + ')</span></h2>';
+          html += '<div class="space-y-10">';
+          folderKeys.forEach(function (folderPath) {
+            var rows = folders[folderPath];
+            rows.sort(function (x, y) { return compareTokensBowlState(x.state, y.state); });
+            html += '<div class="tokens-bowl-folder">';
+            html += '<p class="text-base font-semibold leading-snug text-slate-900 sm:text-[17px]">' + escapeHtml(folderPath) + '</p>';
+            html += '<div class="mt-4 space-y-3 border-l-2 border-blue-100 pl-5 sm:pl-6">';
+            rows.forEach(function (row) {
+              var it = row.it;
+              var state = row.state;
+              var hex = it.hex || '#000000';
+              var pathEsc = escapeHtml(it.path);
+              var hexEsc = escapeHtml(hex);
+              var refCompact = it.refPath ? it.refPath.split(' / ').join('/') : '';
+              var label = it.alias || refCompact;
+              html += '<div class="tokens-bowl-leaf flex flex-col gap-4 rounded-xl border border-slate-100 bg-slate-50/90 px-4 py-4 shadow-sm sm:flex-row sm:items-center sm:gap-5 sm:px-5 sm:py-4">';
+              html += '<div class="h-14 w-14 shrink-0 rounded-xl border-2 border-white shadow-md ring-1 ring-slate-200/80 sm:h-16 sm:w-16" style="background-color:' + hexEsc + '" title="' + hexEsc + '"></div>';
+              html += '<div class="min-w-0 flex-1">';
+              if (state) {
+                html += '<div class="text-base font-medium text-slate-900">' + escapeHtml(state) + '</div>';
+              }
+              if (label) {
+                html += '<p class="mt-1 font-token text-[15px] leading-snug text-blue-900 sm:text-base">' + escapeHtml(label) + '</p>';
+              }
+              html += '</div>';
+              html += '<div class="flex flex-col gap-3 sm:min-w-[200px] sm:items-end">';
+              html += '<code class="w-full rounded-lg bg-white px-3 py-2 text-center font-token text-sm text-slate-800 shadow-sm ring-1 ring-slate-200 sm:w-auto sm:text-[15px]">' + hexEsc + '</code>';
+              html += '<div class="flex flex-wrap gap-2 sm:justify-end">';
+              if (it.alias) {
+                html += '<button type="button" class="tokens-bowl-copy rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 sm:text-sm" data-copy="' + escapeHtml(it.alias) + '">Copiar alias</button>';
+              }
+              html += '<button type="button" class="tokens-bowl-copy rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-blue-700 sm:text-sm" data-copy="' + hexEsc + '">Copiar hex</button>';
+              html += '<button type="button" class="tokens-bowl-copy rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 sm:text-sm" data-copy="' + pathEsc + '">Copiar ruta</button>';
+              html += '</div></div></div>';
+            });
+            html += '</div></div>';
+          });
+          html += '</div></section>';
+        });
+        rootEl.innerHTML = html || '<p class="text-base text-slate-500">Ningún token coincide con el filtro.</p>';
+      }
+
+      function loadTokensBowlPage() {
+        if (tokensBowlLoaded && tokensBowlData) {
+          const inp = document.getElementById('tokens-bowl-filter');
+          renderTokensBowl(tokensBowlData, inp ? inp.value : '');
+          return;
+        }
+        const status = document.getElementById('tokens-bowl-status');
+        const inp = document.getElementById('tokens-bowl-filter');
+        const embed = document.getElementById('bowl-tokens-light-embed');
+        let data = null;
+        if (embed && embed.textContent) {
+          try {
+            data = JSON.parse(embed.textContent.trim());
+          } catch (err) {
+            if (status) status.textContent = 'Error al leer datos embebidos.';
+            const root = document.getElementById('tokens-bowl-root');
+            if (root) {
+              root.innerHTML = '<p class="text-sm text-red-600">' + escapeHtml(err.message) + '</p>';
+            }
+            return;
+          }
+        }
+        if (data && data.items && data.items.length) {
+          tokensBowlData = data;
+          tokensBowlLoaded = true;
+          if (status) {
+            status.textContent = data.count + ' tokens · ' + (data.includedGroups || []).join(' · ');
+          }
+          if (inp) inp.disabled = false;
+          renderTokensBowl(data, inp ? inp.value : '');
+          return;
+        }
+        if (status) status.textContent = 'No hay datos de tokens en la página.';
+        const root = document.getElementById('tokens-bowl-root');
+        if (root) {
+          root.innerHTML = '<p class="text-sm text-slate-600">Falta el bloque <code class="rounded bg-slate-100 px-1">&lt;script id=&quot;bowl-tokens-light-embed&quot;&gt;</code>. Vuelve a generar el HTML o ejecuta <code class="rounded bg-slate-100 px-1">node scripts/build-bowl-tokens-light.mjs</code> y actualiza el embebido.</p>';
+        }
+      }
+
+      document.addEventListener('input', function (e) {
+        if (e.target && e.target.id === 'tokens-bowl-filter' && tokensBowlData) {
+          renderTokensBowl(tokensBowlData, e.target.value);
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.tokens-bowl-copy');
+        if (!btn || !btn.getAttribute('data-copy')) return;
+        const text = btn.getAttribute('data-copy');
+        function feedback() {
+          var prev = btn.textContent;
+          btn.textContent = '¡Copiado!';
+          setTimeout(function () { btn.textContent = prev; }, 1200);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(feedback).catch(function () {
+            window.prompt('Copiar:', text);
+          });
+        } else {
+          window.prompt('Copiar:', text);
+        }
+      });
+
+      const routes = {
+        '/inicio': 'page-inicio',
+        '/guia-semantica': 'page-guia-semantica',
+        '/mapa-visual': 'page-mapa-visual',
+        '/componente': 'page-componente',
+        '/componentes-tokens': 'page-componentes-tokens',
+        '/superficies': 'page-superficies',
+        '/tokens-bowl': 'page-tokens-bowl',
+      };
+
+      function parseHash() {
+        const h = (window.location.hash || '#/inicio').replace(/^#\/?/, '');
+        const path = '/' + (h.split('/').filter(Boolean)[0] || 'inicio');
+        return path;
+      }
+
+      function showPage() {
+        const path = parseHash();
+        const id = routes[path] || 'page-inicio';
+        document.querySelectorAll('.page-section').forEach(function (el) {
+          el.classList.add('hidden');
+        });
+        const page = document.getElementById(id);
+        if (page) page.classList.remove('hidden');
+
+        document.querySelectorAll('.nav-item').forEach(function (a) {
+          const href = a.getAttribute('href') || '';
+          a.classList.toggle('active', href === '#' + path || href === '#/' + path.replace(/^\//, ''));
+        });
+
+        const mob = document.getElementById('section-mob');
+        if (mob) mob.value = '#/' + path.replace(/^\//, '');
+
+        if (id === 'page-tokens-bowl') loadTokensBowlPage();
+      }
+
+      function setView(mode) {
+        document.body.setAttribute('data-view', mode);
+        document.querySelectorAll('.view-btn').forEach(function (b) {
+          const on = b.getAttribute('data-view') === mode;
+          b.classList.toggle('bg-white', on);
+          b.classList.toggle('shadow-sm', on);
+          b.classList.toggle('text-blue-700', on);
+          b.classList.toggle('font-semibold', on);
+          b.classList.toggle('text-slate-600', !on);
+        });
+      }
+
+      window.addEventListener('hashchange', showPage);
+      window.addEventListener('load', function () {
+        if (!window.location.hash) {
+          // En local usamos la home; en despliegues online mostramos directamente tokens.
+          var isLocal = location.hostname === 'localhost' || !location.hostname;
+          window.location.hash = isLocal ? '#/inicio' : '#/tokens-bowl';
+        }
+        showPage();
+        setView('both');
+      });
+
+      document.getElementById('btn-view-both').addEventListener('click', function () { setView('both'); });
+      document.getElementById('btn-view-material').addEventListener('click', function () { setView('material'); });
+      document.getElementById('btn-view-fluent').addEventListener('click', function () { setView('fluent'); });
+
+      document.getElementById('section-mob').addEventListener('change', function (e) {
+        window.location.hash = e.target.value;
+      });
+    })();
+  </script>
+</body>
 </html>
