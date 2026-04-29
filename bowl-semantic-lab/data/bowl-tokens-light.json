@@ -1,0 +1,457 @@
+{
+  "source": "Light.tokens.json",
+  "includedGroups": [
+    "✅Neutral",
+    "✅Brand",
+    "✅Status"
+  ],
+  "count": 89,
+  "items": [
+    {
+      "path": "Neutral / Foreground / 1 / Rest",
+      "hex": "#1E2B38",
+      "alias": "Neutral Azulado/Darker70"
+    },
+    {
+      "path": "Neutral / Foreground / 1 / Disabled",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Foreground / 1 / Brand / Rest",
+      "hex": "#097DBB",
+      "alias": "Primary/Base"
+    },
+    {
+      "path": "Neutral / Foreground / 1 / Brand / Hover",
+      "hex": "#1F4F69",
+      "alias": "Primary/Darker30"
+    },
+    {
+      "path": "Neutral / Foreground / 1 / Brand / Disabled",
+      "hex": "#ABD9F2",
+      "alias": "Primary/Lighter70"
+    },
+    {
+      "path": "Neutral / Foreground / 2 / Rest",
+      "hex": "#32475D",
+      "alias": "Neutral Azulado/Darker50"
+    },
+    {
+      "path": "Neutral / Foreground / 2 / Select",
+      "hex": "#FFFFFF",
+      "alias": "Neutral Azulado/Lighter100"
+    },
+    {
+      "path": "Neutral / Foreground / 2 / Disabled",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Foreground / 3 / Rest",
+      "hex": "#456483",
+      "alias": "Neutral Azulado/Darker30"
+    },
+    {
+      "path": "Neutral / Foreground / 3 / Select",
+      "hex": "#456483",
+      "alias": "Neutral Azulado/Darker30"
+    },
+    {
+      "path": "Neutral / Foreground / 3 / Disabled",
+      "hex": "#B0C7DE",
+      "alias": "Neutral Azulado/Lighter50"
+    },
+    {
+      "path": "Neutral / Foreground / Link / Rest",
+      "hex": "#0DA2E7",
+      "alias": "Info/Base"
+    },
+    {
+      "path": "Neutral / Foreground / Link / Hover",
+      "hex": "#208BBD",
+      "alias": "Info/Darker10"
+    },
+    {
+      "path": "Neutral / Foreground / On Brand / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Neutral Azulado/Lighter100"
+    },
+    {
+      "path": "Neutral / Foreground / On Status / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Neutral Azulado/Lighter100"
+    },
+    {
+      "path": "Neutral / Background / 1 / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Neutral Azulado/Lighter100"
+    },
+    {
+      "path": "Neutral / Background / 1 / Hover",
+      "hex": "#EFF4F8",
+      "alias": "Neutral Azulado/Lighter90"
+    },
+    {
+      "path": "Neutral / Background / 1 / Select",
+      "hex": "#E8F5FB",
+      "alias": "Info/Lighter90"
+    },
+    {
+      "path": "Neutral / Background / 1 / Disabled",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Background / 2 / Rest",
+      "hex": "#F7F9FC",
+      "alias": "Neutral Azulado/Lighter95"
+    },
+    {
+      "path": "Neutral / Background / 2 / Hover",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Background / 2 / Select",
+      "hex": "#60BAE4",
+      "alias": "Info/Lighter30"
+    },
+    {
+      "path": "Neutral / Background / 3 / Rest",
+      "hex": "#EFF4F8",
+      "alias": "Neutral Azulado/Lighter90"
+    },
+    {
+      "path": "Neutral / Background / 3 / Hover",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Background / 3 / Select",
+      "hex": "#60BAE4",
+      "alias": "Info/Lighter30"
+    },
+    {
+      "path": "Neutral / Transparent / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Neutral / Stroke / 1 / Rest",
+      "hex": "#EFF4F8",
+      "alias": "Neutral Azulado/Lighter90"
+    },
+    {
+      "path": "Neutral / Stroke / 2 / Rest",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Neutral / Stroke / 3 / Rest",
+      "hex": "#B0C7DE",
+      "alias": "Neutral Azulado/Lighter50"
+    },
+    {
+      "path": "Neutral / Stroke / 3 / Hover",
+      "hex": "#688190",
+      "alias": "Neutral Gris/Lighter10"
+    },
+    {
+      "path": "Neutral / Stroke / 3 / HoverExternal",
+      "hex": "#CCD5DA",
+      "alias": "Neutral Gris/Lighter70"
+    },
+    {
+      "path": "Neutral / Stroke / 3 / Select",
+      "hex": "#456483",
+      "alias": "Neutral Azulado/Darker30"
+    },
+    {
+      "path": "Neutral / Stroke / Brand / 1 / Rest",
+      "hex": "#097DBB",
+      "alias": "Primary/Base"
+    },
+    {
+      "path": "Neutral / Stroke / Brand / 1 / Hover",
+      "hex": "#1F4F69",
+      "alias": "Primary/Darker30"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / Rest",
+      "hex": "#719AC3",
+      "alias": "Neutral Azulado/Lighter10"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / Hover",
+      "hex": "#688190",
+      "alias": "Neutral Gris/Lighter10"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / HoverInternal",
+      "hex": "#32475D",
+      "alias": "Neutral Azulado/Darker50"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / HoverExternal",
+      "hex": "#CCD5DA",
+      "alias": "Neutral Gris/Lighter70"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / Select",
+      "hex": "#456483",
+      "alias": "Neutral Azulado/Darker30"
+    },
+    {
+      "path": "Neutral / Stroke / Compound / Disabled",
+      "hex": "#D0DDEB",
+      "alias": "Neutral Azulado/Lighter70"
+    },
+    {
+      "path": "Brand / Background / 1 / Rest",
+      "hex": "#097DBB",
+      "alias": "Primary/Base"
+    },
+    {
+      "path": "Brand / Background / 1 / Hover",
+      "hex": "#1F4F69",
+      "alias": "Primary/Darker30"
+    },
+    {
+      "path": "Brand / Background / 1 / Disabled",
+      "hex": "#ABD9F2",
+      "alias": "Primary/Lighter70"
+    },
+    {
+      "path": "Brand / Background / 1 / Subtle / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 1 / Subtle / Hover",
+      "hex": "#E4F3FB",
+      "alias": "Primary/Lighter90"
+    },
+    {
+      "path": "Brand / Background / 1 / Subtle / Disabled",
+      "hex": "#ABD9F2",
+      "alias": "Primary/Lighter70"
+    },
+    {
+      "path": "Brand / Background / 1 / Link / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 1 / Link / Hover",
+      "hex": "#ABD9F2",
+      "alias": "Primary/Lighter70"
+    },
+    {
+      "path": "Brand / Background / 1 / Link / Disabled",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 2 / Rest",
+      "hex": "#40567D",
+      "alias": "Secundary/Base"
+    },
+    {
+      "path": "Brand / Background / 2 / Hover",
+      "hex": "#353F4F",
+      "alias": "Secundary/Darker30"
+    },
+    {
+      "path": "Brand / Background / 2 / Disabled",
+      "hex": "#9AA9C3",
+      "alias": "Secundary/Lighter50"
+    },
+    {
+      "path": "Brand / Background / 2 / Subtle / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 2 / Subtle / Hover",
+      "hex": "#EFF4F8",
+      "alias": "Neutral Azulado/Lighter90"
+    },
+    {
+      "path": "Brand / Background / 2 / Subtle / Disabled",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 2 / Link / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Background / 2 / Link / Hover",
+      "hex": "#C2CCDB",
+      "alias": "Secundary/Lighter70"
+    },
+    {
+      "path": "Brand / Background / 2 / Link / Disabled",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Brand / Foreground / 1 / Rest",
+      "hex": "#097DBB",
+      "alias": "Primary/Base"
+    },
+    {
+      "path": "Brand / Foreground / 1 / Hover",
+      "hex": "#1F4F69",
+      "alias": "Primary/Darker30"
+    },
+    {
+      "path": "Brand / Foreground / 1 / Disabled",
+      "hex": "#ABD9F2",
+      "alias": "Primary/Lighter70"
+    },
+    {
+      "path": "Brand / Foreground / 2 / Rest",
+      "hex": "#40567D",
+      "alias": "Secundary/Base"
+    },
+    {
+      "path": "Brand / Foreground / 2 / Hover",
+      "hex": "#3F4F6B",
+      "alias": "Secundary/Darker10"
+    },
+    {
+      "path": "Brand / Foreground / 2 / Disabled",
+      "hex": "#C2CCDB",
+      "alias": "Secundary/Lighter70"
+    },
+    {
+      "path": "Status / Error / Stroke / Rest",
+      "hex": "#D12B3D",
+      "alias": "Error/Base"
+    },
+    {
+      "path": "Status / Error / Background / Rest",
+      "hex": "#D12B3D",
+      "alias": "Error/Base"
+    },
+    {
+      "path": "Status / Error / Background / Hover",
+      "hex": "#AC3543",
+      "alias": "Error/Darker10"
+    },
+    {
+      "path": "Status / Error / Background / Disabled",
+      "hex": "#EDC3C8",
+      "alias": "Error/Lighter70"
+    },
+    {
+      "path": "Status / Error / Foreground / On Error",
+      "hex": "#7A353D",
+      "alias": "Error/Darker30"
+    },
+    {
+      "path": "Status / Link / Background / Rest",
+      "hex": "#FFFFFF",
+      "alias": "Transparent/White/0"
+    },
+    {
+      "path": "Status / Link / Foreground / Rest",
+      "hex": "#208BBD",
+      "alias": "Info/Darker10"
+    },
+    {
+      "path": "Status / Link / Foreground / Hover",
+      "hex": "#286683",
+      "alias": "Info/Darker30"
+    },
+    {
+      "path": "Status / Link / Foreground / Disabled",
+      "hex": "#8DCEEC",
+      "alias": "Info/Lighter50"
+    },
+    {
+      "path": "Status / Info / Background / Rest",
+      "hex": "#0DA2E7",
+      "alias": "Info/Base"
+    },
+    {
+      "path": "Status / Info / Background / Hover",
+      "hex": "#208BBD",
+      "alias": "Info/Darker10"
+    },
+    {
+      "path": "Status / Info / Background / Disabled",
+      "hex": "#BEE3F4",
+      "alias": "Info/Lighter70"
+    },
+    {
+      "path": "Status / Info / Foreground / On info",
+      "hex": "#286683",
+      "alias": "Info/Darker30"
+    },
+    {
+      "path": "Status / Info / Stroke / Focus",
+      "hex": "#0DA2E7",
+      "alias": "Info/Base"
+    },
+    {
+      "path": "Status / Info / Stroke / FocusExternal",
+      "hex": "#BEE3F4",
+      "alias": "Info/Lighter70"
+    },
+    {
+      "path": "Status / Success / Background / Rest",
+      "hex": "#139242",
+      "alias": "Success/Darker10"
+    },
+    {
+      "path": "Status / Success / Background / Hover",
+      "hex": "#1B6536",
+      "alias": "Success/Darker30"
+    },
+    {
+      "path": "Status / Success / Background / Disabled",
+      "hex": "#A8F4C4",
+      "alias": "Success/Lighter70"
+    },
+    {
+      "path": "Status / Success / Foreground / On Success",
+      "hex": "#1B6536",
+      "alias": "Success/Darker30"
+    },
+    {
+      "path": "Status / Warning / Background / Rest",
+      "hex": "#DE9923",
+      "alias": "Warning/Darker10"
+    },
+    {
+      "path": "Status / Warning / Background / Hover",
+      "hex": "#9B732D",
+      "alias": "Warning/Darker30"
+    },
+    {
+      "path": "Status / Warning / Background / Disabled",
+      "hex": "#F6E4C5",
+      "alias": "Warning/Lighter70"
+    },
+    {
+      "path": "Status / Warning / Foreground / On Warning",
+      "hex": "#9B732D",
+      "alias": "Warning/Darker30"
+    },
+    {
+      "path": "Status / Neutral / Background / Rest",
+      "hex": "#EFF4F8",
+      "alias": "Neutral Azulado/Lighter90"
+    },
+    {
+      "path": "Status / Neutral / Foreground / On Neutral",
+      "hex": "#1E2B38",
+      "refPath": "Neutral / Foreground / 1 / Rest",
+      "resolvedFrom": "Neutral / Foreground / 1 / Rest"
+    }
+  ]
+}
